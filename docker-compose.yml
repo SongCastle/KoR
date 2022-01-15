@@ -7,6 +7,7 @@ services:
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
     env_file:
       - db/.env
+      - front/.env
     secrets:
       - db-password
     ports:
@@ -15,9 +16,10 @@ services:
       - ./back/src:/src/go/back
     networks:
       - back_net
-    tty: true
+      - front_net
     depends_on:
       - db
+    tty: true
 
   db:
     container_name: db
@@ -35,8 +37,27 @@ services:
     volumes:
       - ./db/data:/var/lib/mysql
 
+  front:
+    container_name: front
+    build: ./front
+    volumes:
+      - ./front:/opt/front
+      - no_modules:/opt/front/node_modules
+    env_file:
+      - back/.env
+    networks:
+      - front_net
+    ports:
+      - '8080:8080'
+    depends_on:
+      - back
+    tty: true
+
+volumes:
+  no_modules:
 secrets:
   db-password:
     file: db/password.txt
 networks:
   back_net:
+  front_net:

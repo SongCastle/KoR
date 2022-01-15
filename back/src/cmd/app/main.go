@@ -1,8 +1,11 @@
 package main
 
 import (
+	"os"
+
 	"github.com/SongCastle/KoR/api"
 	"github.com/SongCastle/KoR/db"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,6 +20,12 @@ func load() {
 
 func serve() {
 	r := gin.Default()
+
+	if frontHost := os.Getenv("FRONT_HOST"); frontHost != "" {
+		r.Use(cors.New(cors.Config{
+			AllowOrigins: []string{frontHost},
+		}))
+	}
 
 	v1 := r.Group("/v1")
 	v1.GET("/ping", api.Ping)
