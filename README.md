@@ -28,5 +28,5 @@ $ docker-compose up -d
 $ docker-compose exec back ash
 
 # コンテナ内
-/src/go/back # chmod +x serve.sh && ./serve.sh
+# chmod +x serve.sh && ./serve.sh
 ```
