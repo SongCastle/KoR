@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  back:
+    container_name: back
+    build: ./back
+    environment:
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
+    env_file:
+      - db/.env
+    secrets:
+      - db-password
+    ports:
+      - '3000:8080'
+    volumes:
+      - ./back/src:/src/go/back
+    networks:
+      - back_net
+    tty: true
+    depends_on:
+      - db
+
+  db:
+    container_name: db
+    build: ./db
+    environment:
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
+    env_file:
+      - db/.env
+    secrets:
+      - db-password
+    networks:
+      - back_net
+    expose:
+      - 3306
+    volumes:
+      - ./db/data:/var/lib/mysql
+
+secrets:
+  db-password:
+    file: db/password.txt
+networks:
+  back_net:
