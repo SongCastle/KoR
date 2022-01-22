@@ -1,5 +1,6 @@
 #!/bin/sh
 
+go mod tidy
 cd cmd/app
 go build -o /go/bin/app
 
