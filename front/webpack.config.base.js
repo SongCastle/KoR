@@ -22,7 +22,7 @@ const config = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: [['@babel/preset-env', { targets: 'defaults' }], '@babel/preset-react'],
+            presets: ['@babel/env', '@babel/react'],
           },
         },
       },
