@@ -6,8 +6,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var pepper string
-var cost int
+var (
+	pepper string
+	cost int
+)
 
 func Init() {
 	if _pepper := os.Getenv("PASSWORD_PEPPER"); pepper != "" {
