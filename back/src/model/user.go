@@ -29,7 +29,7 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 
 type NewUser struct {
 	Login    string `json:"login,omitempty"`
-	Password string `json:"password,omitempty",sql:"-"`
+	Password string `json:"password,omitempty"`
 	Email    string `json:"email,omitempty"`
 }
 
