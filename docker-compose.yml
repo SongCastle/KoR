@@ -6,6 +6,7 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
     env_file:
+      - back/.env
       - db/.env
       - front/.env
     secrets:
@@ -13,7 +14,7 @@ services:
     ports:
       - '3000:8080'
     volumes:
-      - ./back/src:/src/go/back
+      - ./back/src:/src/go/github.com/SongCastle/KoR
     networks:
       - back_net
       - front_net

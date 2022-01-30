@@ -5,17 +5,25 @@ import (
 
 	"github.com/SongCastle/KoR/api"
 	"github.com/SongCastle/KoR/db"
+	"github.com/SongCastle/KoR/lib/encryptor"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	load()
+	if err := load(); err != nil {
+		println("Failed to launch Server.")
+		return
+	}
 	serve()
 }
 
-func load() {
-	db.InitDB()
+func load() error {
+	if err := db.InitDB(); err != nil {
+		return err
+	}
+	encryptor.Init()
+	return nil
 }
 
 func serve() {
