@@ -3,7 +3,7 @@ WORK IN PROGRESS ...
 
 # Getting Started
 
-1.本レポジトリを Clone します
+1. 本レポジトリを Clone します
 ```
 $ git clone git@github.com:SongCastle/KoR.git
 $ cd KoR
