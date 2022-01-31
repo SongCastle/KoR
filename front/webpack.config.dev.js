@@ -8,18 +8,20 @@ const config = merge(base, {
   mode: 'development',
   devtool: 'inline-source-map',
   devServer: {
-    contentBase: staticPath,
+    // contentBaseを削除し、staticに変更
+    static: {
+      directory: staticPath,
+    },
     historyApiFallback: true,
     host: '0.0.0.0',
     hot: true,
     port: 8080,
-    publicPath: '/assets/',
-    watchContentBase: true,
   },
   watchOptions: {
     ignored: /node_modules/,
   },
   target: 'web',
+  // publicPathとwatchContentBaseを削除
 });
 
 module.exports = config;
