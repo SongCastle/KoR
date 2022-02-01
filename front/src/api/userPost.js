@@ -11,7 +11,7 @@ const base = axios.create({
 // バックエンド側のcors対策がfrontendHostのみになっているので通らない。
 // バックエンドのcorsに/signupも含める必要がある。
 export const postUser = (params) => base.post('/v1/users', {
-  username: params.username,
+  login: params.username,
   email: params.email,
   password: params.password
 })
