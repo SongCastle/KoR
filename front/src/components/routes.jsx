@@ -6,6 +6,7 @@ import { Users } from './Users';
 import { SingupForm } from './SignupForm';
 import { Header } from './Header';
 import { Login } from './Login';
+import { Admin } from './Admin';
 
 export const Routes = () => (
   <Router>
@@ -14,6 +15,7 @@ export const Routes = () => (
       <Route exact path='/users' component={Users} />
       <Route exact path='/signup' component={SingupForm} />
       <Route exact path='/login' component={Login} />
+      <Route exact path='/admin' component={Admin} />
       <Route path='/' component={Top} />
     </Switch>
   </Router>

@@ -10,8 +10,11 @@ export const Header = () => (
       <li className='mr-3'>
         <Link to='/signup'>Signup</Link>
       </li>
-      <li>
+      <li className='mr-3'>
         <Link to='/login'>Login</Link>
+      </li>
+      <li>
+        <Link to='/admin'>Admin</Link>
       </li>
     </ul>
   </header>

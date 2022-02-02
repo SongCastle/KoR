@@ -8,7 +8,10 @@ const tailwindConfig = {
     extend: {},
   },
   variants: {
-    extend: {},
+    extend: {
+      backgroundColor: ['responsive', 'hover', 'focus', 'active'],
+      transitionProperty: ['hover', 'focus'],
+    },
   },
   plugins: [],
 };

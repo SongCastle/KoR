@@ -3,40 +3,43 @@ import { useState } from 'react';
 import { postUser } from '../api/userPost';
 
 export const SingupForm = () => {
-  const [username, setUserame] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUserame] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleChange = (event) => {
-    switch(event.target.name) {
+    switch (event.target.name) {
       case 'username':
-        setUserame(event.target.value)
+        setUserame(event.target.value);
         break;
       case 'email':
-        setEmail(event.target.value)
+        setEmail(event.target.value);
         break;
       case 'password':
-        setPassword(event.target.value)
+        setPassword(event.target.value);
         break;
       default:
-        console.log('key not found')
+        console.log('key not found');
     }
-  }
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const params = {
       username: username,
       email: email,
-      password: password
-    }
+      password: password,
+    };
     alert(Object.values(params));
     // postUser(params);
-  } 
+  };
 
-  return(
+  return (
     <div className='flex justify-center pt-6 bg-gray-800 h-screen'>
-      <form className='sm:w-1/3 w-5/6 h-3/5 sm:h-3/5 border-2 rounded-lg shadow-sm p-5 bg-white' onSubmit={handleSubmit}>
+      <form
+        className='sm:w-1/3 w-5/6 h-4/5 sm:h-3/5 border-2 rounded-lg shadow-sm p-5 bg-white'
+        onSubmit={handleSubmit}
+      >
         <div className='mb-5'>
           <label className='flex flex-col mb-2' htmlFor='username'>
             Username
@@ -87,8 +90,13 @@ export const SingupForm = () => {
               className='border-2 rounded p-2'
             />
           </label>
+          <input
+            type='submit'
+            id='button'
+            className='bg-purple-400 border-2 rounded-lg px-2 py-1 hover:bg-purple-600'
+            value='Singup'
+          />
         </div>
-        <input type='submit' className='bg-purple-400 border-2 rounded-lg px-2 py-1' value='Singup' />
       </form>
     </div>
   );
