@@ -32,6 +32,11 @@ func serve() {
 	if frontHost := os.Getenv("FRONT_HOST"); frontHost != "" {
 		r.Use(cors.New(cors.Config{
 			AllowOrigins: []string{frontHost},
+			AllowHeaders: []string{
+				"Access-Control-Allow-Headers",
+				"Content-Type",
+			},
+			AllowMethods: []string{"PUT", "DELETE"},
 		}))
 	}
 
