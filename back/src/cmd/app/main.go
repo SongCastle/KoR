@@ -36,6 +36,7 @@ func serve() {
 				"Access-Control-Allow-Headers",
 				"Content-Type",
 			},
+			AllowMethods: []string{"PUT", "DELETE"},
 		}))
 	}
 
