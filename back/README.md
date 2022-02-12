@@ -10,6 +10,7 @@ GET    /v1/users/:id # ユーザ取得
 PUT    /v1/users/:id # ユーザ更新
 POST   /v1/users # ユーザ作成
 DELETE /v1/users/:id # ユーザ削除
+PUT    /v1/users/auth # ユーザ認証
 ```
 
 #### 操作例

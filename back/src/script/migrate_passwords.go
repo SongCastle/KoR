@@ -58,7 +58,6 @@ func main() {
 		if user.Password == "" {
 			user.Password = defaultPassword
 		}
-		user.SetPasswordSolt()
 		if err := user.EncryptPassword(); err != nil {
 			fmt.Printf("Failed to encrypt Password (User#%d)\n\n", user.ID)
 			continue

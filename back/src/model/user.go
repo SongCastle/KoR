@@ -2,12 +2,11 @@ package model
 
 import (
 	"errors"
-	"math/rand"
 	"time"
-	"strconv"
 
 	"github.com/SongCastle/KoR/db"
 	"github.com/SongCastle/KoR/lib/encryptor"
+	"github.com/SongCastle/KoR/lib/random"
 	"github.com/jinzhu/gorm"
 )
 
@@ -22,7 +21,6 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 	if u.Password == "" {
 		return errors.New("Blank Password")
 	}
-	u.SetPasswordSolt()
 	u.EncryptPassword()
 	return nil
 }
@@ -42,12 +40,16 @@ type User struct {
 	UpdatedAt         time.Time `json:"updated_at,omitempty"`
 }
 
-func (u *User) SetPasswordSolt() {
-	u.PasswordSalt = generatePasswordSalt()
+type UserGetQuery struct {
+	ID    uint64
+	Login string
 }
 
 func (u *User) EncryptPassword() error {
 	if u.Password != "" {
+		// Set PasswordSalt
+		u.PasswordSalt = random.Generate(UserPasswordSaltLen)
+		// Encrypt Password
 		digest, err := encryptor.Digest(u.Password + u.PasswordSalt)
 		if err != nil {
 			return err
@@ -63,7 +65,7 @@ func (u *User) ValidPassword(password string) bool {
 
 // TODO: User オブジェクト内に関数群を含めた方がよいかも ...
 
-func GetUsers(cols string) ([]User, error) {
+func GetUsers(cols []string) ([]User, error) {
 	var users []User
 
 	conn := db.NewDB()
@@ -78,8 +80,9 @@ func GetUsers(cols string) ([]User, error) {
 	return users, nil
 }
 
-func GetUser(id uint64, cols string) (*User, error) {
-	user := &User{ID: id}
+func GetUser(query *UserGetQuery, cols []string) (*User, error) {
+	user := User{}
+	user.ID, user.Login = query.ID, query.Login
 
 	conn := db.NewDB()
 	if err := conn.Open(); err != nil {
@@ -87,10 +90,10 @@ func GetUser(id uint64, cols string) (*User, error) {
 	}
 	defer conn.Close()
 
-	if err := conn.DB().Select(cols).Take(user).Error; err != nil {
+	if err := conn.DB().Where(&user).Select(cols).First(&user).Error; err != nil {
 		return nil, err
 	}
-	return user, nil
+	return &user, nil
 }
 
 func CreateUser(newUser *NewUser) (*User, error) {
@@ -139,24 +142,4 @@ func DeleteUser(id uint64) error {
 		return err
 	}
 	return nil
-}
-
-func generatePasswordSalt() string {
-	rand.Seed(time.Now().UnixNano())
-
-	salt := ""
-	for i := 0; i < UserPasswordSaltLen; i++ {
-		n := rand.Intn(62)
-		if n < 26 {
-			// 小文字
-			salt += string('a' + n)
-		} else if n < 52 {
-			// 大文字
-			salt += string('A' + (n - 26))
-		} else {
-			// 数字
-			salt += strconv.Itoa(n - 52)
-		}
-	}
-	return salt
 }
