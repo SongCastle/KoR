@@ -65,7 +65,7 @@ func CreateUser(c *gin.Context) {
 }
 
 func UpdateUser(c *gin.Context) {
-	// TODO: API 保護用の midddlewate を追加したい
+	// TODO: API 保護用の middleware を追加したい
 
 	// Authorization ヘッダを確認
 	authHeader := c.Request.Header.Get("Authorization")
