@@ -71,7 +71,7 @@ func Validate(tokenString string, userID uint64) (bool, error) {
 }
 
 func parse(tokenString string) (*jwt.Token, error) {
-	return jwt.ParseWithClaims(tokenString, &CustomClaims{},  func(t *jwt.Token) (interface{}, error) {
+	return jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(t *jwt.Token) (interface{}, error) {
 		return []byte(jwtSecret), nil
 	})
 }

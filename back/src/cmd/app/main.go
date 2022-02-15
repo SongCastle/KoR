@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/SongCastle/KoR/api"
@@ -28,8 +29,24 @@ func load() error {
 	return nil
 }
 
+func errorMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+		if err := c.Errors.Last(); err != nil {
+			log.Printf("Error: %v\n", err.Error())
+			if code, ok := err.Meta.(gin.H); ok {
+				c.JSON(c.Writer.Status(), code)
+			}
+		}
+	}
+}
+
 func serve() {
-	r := gin.Default()
+	// TODO: 環境変数化など
+	gin.SetMode(gin.DebugMode)
+
+	r := gin.New()
+	r.Use(gin.Logger(), gin.Recovery())
 
 	if frontHost := os.Getenv("FRONT_HOST"); frontHost != "" {
 		r.Use(cors.New(cors.Config{
@@ -46,12 +63,15 @@ func serve() {
 	v1.GET("/ping", api.Ping)
 
 	// Users API
-	v1.GET("/users", api.ShowUsers)
-	v1.GET("/users/:id", api.ShowUser)
-	v1.PUT("/users/:id", api.UpdateUser)
-	v1.POST("/users", api.CreateUser)
-	v1.DELETE("/users/:id", api.DeleteUser)
-	v1.PUT("/users/auth", api.AuthUser)
+	v1.Use(errorMiddleware())
+	{
+		v1.GET("/users", api.ShowUsers)
+		v1.GET("/users/:id", api.ShowUser)
+		v1.PUT("/users/:id", api.UpdateUser)
+		v1.POST("/users", api.CreateUser)
+		v1.DELETE("/users/:id", api.DeleteUser)
+		v1.PUT("/users/auth", api.AuthUser)
+	}
 
 	r.NoRoute(api.NoRoute)
 
