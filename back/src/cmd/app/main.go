@@ -29,7 +29,7 @@ func load() error {
 	return nil
 }
 
-func errorMiddleware() gin.HandlerFunc {
+func errorHandleMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 		if err := c.Errors.Last(); err != nil {
@@ -63,7 +63,7 @@ func serve() {
 	v1.GET("/ping", api.Ping)
 
 	// Users API
-	v1.Use(errorMiddleware())
+	v1.Use(errorHandleMiddleware())
 	{
 		v1.GET("/users", api.ShowUsers)
 		v1.GET("/users/:id", api.ShowUser)
