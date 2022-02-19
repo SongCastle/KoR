@@ -1,44 +1,30 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/SongCastle/KoR/api"
 	"github.com/SongCastle/KoR/db"
-	"github.com/SongCastle/KoR/lib/encryptor"
-	"github.com/SongCastle/KoR/lib/jwt"
+	"github.com/SongCastle/KoR/lib"
+	"github.com/SongCastle/KoR/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	if err := load(); err != nil {
+	if err := setUp(); err != nil {
 		println("Failed to launch Server.")
 		return
 	}
 	serve()
 }
 
-func load() error {
+func setUp() error {
 	if err := db.InitDB(); err != nil {
 		return err
 	}
-	encryptor.Init()
-	jwt.Init()
+	lib.SetUp()
 	return nil
-}
-
-func errorHandleMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Next()
-		if err := c.Errors.Last(); err != nil {
-			log.Printf("Error: %v\n", err.Error())
-			if code, ok := err.Meta.(gin.H); ok {
-				c.JSON(c.Writer.Status(), code)
-			}
-		}
-	}
 }
 
 func serve() {
@@ -63,14 +49,20 @@ func serve() {
 	v1.GET("/ping", api.Ping)
 
 	// Users API
-	v1.Use(errorHandleMiddleware())
+	v1.Use(middleware.ErrorHandleMiddleware())
 	{
 		v1.GET("/users", api.ShowUsers)
 		v1.GET("/users/:id", api.ShowUser)
-		v1.PUT("/users/:id", api.UpdateUser)
 		v1.POST("/users", api.CreateUser)
-		v1.DELETE("/users/:id", api.DeleteUser)
 		v1.PUT("/users/auth", api.AuthUser)
+
+		// Require Authorization
+		auth := v1.Group("/")
+		auth.Use(middleware.AuthHandleMiddleware())
+		{
+			auth.PUT("/users/:id", api.UpdateUser)
+			auth.DELETE("/users/:id", api.DeleteUser)
+		}
 	}
 
 	r.NoRoute(api.NoRoute)

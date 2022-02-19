@@ -46,16 +46,19 @@ type UserGetQuery struct {
 }
 
 func (u *User) EncryptPassword() error {
-	if u.Password != "" {
+	if u.Password == "" {
+		return nil
+	}
+	if u.PasswordSalt == "" {
 		// Set PasswordSalt
 		u.PasswordSalt = random.Generate(UserPasswordSaltLen)
-		// Encrypt Password
-		digest, err := encryptor.Digest(u.Password + u.PasswordSalt)
-		if err != nil {
-			return err
-		}
-		u.EncryptedPassword = digest
 	}
+	// Encrypt Password
+	digest, err := encryptor.Digest(u.Password + u.PasswordSalt)
+	if err != nil {
+		return err
+	}
+	u.EncryptedPassword = digest
 	return nil
 }
 
@@ -74,7 +77,11 @@ func GetUsers(cols []string) ([]User, error) {
 	}
 	defer conn.Close()
 
-	if err := conn.DB().Select(cols).Find(&users).Error; err != nil {
+	cdb := conn.DB()
+	if len(cols) > 0 {
+		cdb = cdb.Select(cols)
+	}
+	if err := cdb.Find(&users).Error; err != nil {
 		return nil, err
 	}
 	return users, nil
@@ -90,7 +97,11 @@ func GetUser(query *UserGetQuery, cols []string) (*User, error) {
 	}
 	defer conn.Close()
 
-	if err := conn.DB().Where(&user).Select(cols).First(&user).Error; err != nil {
+	cdb := conn.DB().Where(&user)
+	if len(cols) > 0 {
+		cdb = cdb.Select(cols)
+	}
+	if err := cdb.First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -102,7 +113,6 @@ func CreateUser(newUser *NewUser) (*User, error) {
 		return nil, err
 	}
 	defer conn.Close()
-
 	// TODO: 検証
 	user := &User{NewUser: *newUser}
 	if err := conn.DB().Omit("Password").Create(user).Error; err != nil {
@@ -111,23 +121,27 @@ func CreateUser(newUser *NewUser) (*User, error) {
 	return user, nil
 }
 
-func UpdateUser(id uint64, user *NewUser) (*User, error) {
+func UpdateUser(userParams *User) (*User, error) {
+	// TODO: 検証する (引数含む)
 	conn := db.NewDB()
 	if err := conn.Open(); err != nil {
 		return nil, err
 	}
 	defer conn.Close()
-
-	// TODO: 検証
-	_user := &User{ID: id, NewUser: *user}
-	if err := _user.EncryptPassword(); err != nil {
+	// TODO: DB Connection を Context で管理したい
+	user, err := GetUser(&UserGetQuery{ID: userParams.ID}, []string{"password_salt"})
+	if err != nil {
 		return nil, err
 	}
-
-	if err := conn.DB().Model(_user).Omit("Password").Update(_user).Error; err != nil {
+	// TODO: ゼロ値の識別
+	user.Login, user.Email, user.Password = userParams.Login, userParams.Email, userParams.Password
+	if err := user.EncryptPassword(); err != nil {
 		return nil, err
 	}
-	return _user, nil
+	if err := conn.DB().Model(&User{ID: userParams.ID}).Omit("Password").Update(user).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 func DeleteUser(id uint64) error {
