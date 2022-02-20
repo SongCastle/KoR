@@ -29,16 +29,16 @@ func AuthHandleMiddleware() gin.HandlerFunc {
 		}
 		// Authorization Token を取得・検証
 		token := strings.TrimSpace(auth[authLen - 1])
-		claims, err := jwt.Verify(token)
+		rjt, err := jwt.Verify(token)
 		if err != nil {
 			c.AbortWithError(http.StatusBadRequest, err).SetMeta(ecode.CodeJson("FailToValidateAuthToken"))
 			return
 		}
 		user, err := model.GetUser(
-			&model.UserGetQuery{ID: claims.UserID},
-			[]string{"id", "login", "email"},
+			&model.UserGetQuery{ID: rjt.UserID},
+			[]string{"id", "login", "email", "auth_uuid"},
 		)
-		if err != nil {
+		if err != nil || user.AuthUUID != rjt.ID {
 			c.AbortWithStatusJSON(http.StatusBadRequest, ecode.CodeJson("InvalidAuthToken"))
 			return
 		}

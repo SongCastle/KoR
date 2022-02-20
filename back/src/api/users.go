@@ -38,12 +38,12 @@ func ShowUser(c *gin.Context) {
 }
 
 func CreateUser(c *gin.Context) {
-	var newUser model.NewUser
-	if err := c.ShouldBindJSON(&newUser); err != nil {
+	var userParams model.UserParams
+	if err := c.ShouldBindJSON(&userParams); err != nil {
 		abortWithError(c, http.StatusBadRequest, "InvalidCreateUserParams", err)
 		return
 	}
-	user, err := model.CreateUser(&newUser)
+	user, err := model.CreateUser(&userParams)
 	if err != nil {
 		abortWithError(c, http.StatusBadRequest, "FailToCreateUser", err)
 		return
@@ -65,7 +65,7 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 	// ユーザ更新
-	userParams := model.User{}
+	var userParams model.UserParams
 	if err := c.ShouldBindJSON(&userParams); err != nil {
 		abortWithError(c, http.StatusBadRequest, "InvalidUpdateUserParams", err)
 		return
@@ -94,7 +94,7 @@ func DeleteUser(c *gin.Context) {
 		abortWithError(c, http.StatusBadRequest, "FailToDeleteUser", err)
 		return
 	}
-	c.String(http.StatusOK, "deleted")
+	c.Status(http.StatusNoContent)
 }
 
 // TODO: 他の hundler も同様に型定義した方が良いかも ...
@@ -121,7 +121,7 @@ func AuthUser(c *gin.Context) {
 
 	user, err := model.GetUser(
 		&model.UserGetQuery{Login: params.Login},
-		[]string{"id", "encrypted_password", "login", "password_salt"},
+		[]string{"id", "encrypted_password", "login", "password_salt", "auth_uuid"},
 	)
 	if err != nil {
 		abortWithError(c, http.StatusBadRequest, "FailToAuth", err)
@@ -133,12 +133,35 @@ func AuthUser(c *gin.Context) {
 		return
 	}
 	// JWT Token 生成
-	token, err := jwt.Generate(user.ID, user.Login)
+	jt, err := jwt.Generate(user.AuthUUID, user.Login, user.ID)
 	if err != nil {
 		abortWithError(c, http.StatusBadRequest, "FailToGenerateAuthToken", err)
 		return
 	}
-	c.String(http.StatusOK, token)
+	if _, err:= model.UpdateUser(&model.UserParams{ID: user.ID, AuthUUID: &jt.ID}); err != nil {
+		abortWithError(c, http.StatusBadRequest, "FailToGiveAuthToken", err)
+		return
+	}
+	c.String(http.StatusOK, jt.Token)
+}
+
+func UnauthUser(c *gin.Context) {
+	_user, ok := c.Get("CurrentUser")
+	if !ok {
+		abortWithJSON(c, http.StatusBadRequest, "UnidentifiedUser")
+		return
+	}
+	user, ok := _user.(*model.User)
+	if !ok {
+		abortWithJSON(c, http.StatusBadRequest, "UnidentifiedUser")
+		return
+	}
+	blankUUID := ""
+	if _, err:= model.UpdateUser(&model.UserParams{ID: user.ID, AuthUUID: &blankUUID}); err != nil {
+		abortWithError(c, http.StatusBadRequest, "FailToDeleteAuthToken", err)
+		return
+	}
+	c.Status(http.StatusNoContent)
 }
 
 func responseKeys() []string {
