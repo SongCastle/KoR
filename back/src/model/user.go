@@ -123,9 +123,7 @@ func CreateUser(userParams *UserParams) (*User, error) {
 	// TODO: 検証
 	user := &User{}
 	bindParamsToUser(userParams, user)
-	user.ID = 0
-	user.AuthUUID = ""
-
+	user.ID, user.AuthUUID = 0, ""
 	if err := conn.DB().Omit("Password").Create(user).Error; err != nil {
 		return nil, err
 	}
@@ -160,7 +158,6 @@ func DeleteUser(id uint64) error {
 		return err
 	}
 	defer conn.Close()
-
 	// TODO: 検証
 	if err := conn.DB().Delete(&User{ID: id}).Error; err != nil {
 		return err
