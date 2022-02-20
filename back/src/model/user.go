@@ -26,15 +26,11 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 	return nil
 }
 
-type NewUser struct {
-	Login    string `json:"login,omitempty"`
-	Password string `json:"password,omitempty"`
-	Email    string `json:"email,omitempty"`
-}
-
 type User struct {
-	NewUser
 	ID                uint64 `json:"id,omitempty",gorm:"primaryKey"`
+	Login             string `json:"login,omitempty"`
+	Password          string `json:"password,omitempty"`
+	Email             string `json:"email,omitempty"`
 	PasswordSalt      string `json:"password_salt,omitempty"`
 	EncryptedPassword string `json:"encrypted_password,omitempty"`
 	AuthUUID          string `json:"auth_uuid,omitempty"`
