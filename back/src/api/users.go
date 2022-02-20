@@ -71,6 +71,7 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 	userParams.ID = id
+	userParams.AuthUUID = nil
 	user, err := model.UpdateUser(&userParams)
 	if err != nil {
 		abortWithError(c, http.StatusBadRequest, "FailToUpdateUser", err)
