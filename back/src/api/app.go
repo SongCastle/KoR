@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 
+	"github.com/SongCastle/KoR/ecode"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,9 +16,9 @@ func NoRoute(c *gin.Context) {
 }
 
 func abortWithError(c *gin.Context, status int, code string, err error) {
-	c.AbortWithError(status, err).SetMeta(gin.H{"code": code})
+	c.AbortWithError(status, err).SetMeta(ecode.CodeJson(code))
 }
 
 func abortWithJSON(c *gin.Context, status int, code string) {
-	c.AbortWithStatusJSON(status, gin.H{"code": code})
+	c.AbortWithStatusJSON(status, ecode.CodeJson(code))
 }

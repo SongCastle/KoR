@@ -19,9 +19,13 @@ const (
 	ValidTerm = 30 * 24 * time.Hour
 )
 
+type AdditionalClaims struct {
+	UserID uint64
+}
+
 type CustomClaims struct {
 	*jwt.RegisteredClaims
-	UserID uint64
+	*AdditionalClaims
 }
 
 func Init() {
@@ -43,31 +47,33 @@ func Generate(userID uint64, audience string) (string, error) {
 			ID:        random.Generate(UUIDLen),
 			Audience:  jwt.ClaimStrings{audience},
 		},
-		UserID: userID,
+		AdditionalClaims: &AdditionalClaims{
+			UserID: userID,
+		},
 	}
 	return t.SignedString([]byte(jwtSecret))
 }
 
-func Validate(tokenString string, userID uint64) (bool, error) {
+func Verify(tokenString string) (*AdditionalClaims, error) {
 	token, err := parse(tokenString)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	if token.Method.Alg() != SignAlg {
-		return false, errors.New("Invalid Algorithm")
+		return nil, errors.New("Invalid Algorithm")
 	}
 	claims, ok := token.Claims.(*CustomClaims)
 	if !ok {
-		return false, errors.New("Invaid Claims")
+		return nil, errors.New("Invaid Claims")
 	}
 	now := time.Now()
 	if claims.NotBefore.After(now) {
-		return false, errors.New("Not Started Token")
+		return nil, errors.New("Not Started Token")
 	}
 	if claims.ExpiresAt.Before(now) {
-		return false, errors.New("Expired Token")
+		return nil, errors.New("Expired Token")
 	}
-	return claims.UserID == userID, nil
+	return claims.AdditionalClaims, nil
 }
 
 func parse(tokenString string) (*jwt.Token, error) {

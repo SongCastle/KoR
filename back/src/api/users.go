@@ -3,9 +3,7 @@ package api
 import (
 	"net/http"
 	"strconv"
-	"strings"
 
-	"github.com/SongCastle/KoR/ecode"
 	"github.com/SongCastle/KoR/lib/jwt"
 	"github.com/SongCastle/KoR/model"
 	"github.com/gin-gonic/gin"
@@ -14,7 +12,7 @@ import (
 func ShowUsers(c *gin.Context) {
 	users, err := model.GetUsers(responseKeys())
 	if err != nil {
-		abortWithError(c, http.StatusBadRequest, ecode.FailToGetUsers, err)
+		abortWithError(c, http.StatusBadRequest, "FailToGetUsers", err)
 		return
 	}
 	c.JSON(http.StatusOK, &users)
@@ -23,17 +21,17 @@ func ShowUsers(c *gin.Context) {
 func ShowUser(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		abortWithJSON(c, http.StatusBadRequest, ecode.BlankUserID)
+		abortWithJSON(c, http.StatusBadRequest, "BlankUserID")
 		return
 	}
 	_id, err := strconv.ParseUint(id, 10, 64)
 	if err != nil {
-		abortWithError(c, http.StatusBadRequest, ecode.InvalidUserID, err)
+		abortWithError(c, http.StatusBadRequest, "InvalidUserID", err)
 		return
 	}
 	user, err := model.GetUser(&model.UserGetQuery{ID: _id}, responseKeys())
 	if err != nil {
-		abortWithError(c, http.StatusBadRequest, ecode.FailToGetUser, err)
+		abortWithError(c, http.StatusBadRequest, "FailToGetUser", err)
 		return
 	}
 	c.JSON(http.StatusOK, user)
@@ -42,12 +40,12 @@ func ShowUser(c *gin.Context) {
 func CreateUser(c *gin.Context) {
 	var newUser model.NewUser
 	if err := c.ShouldBindJSON(&newUser); err != nil {
-		abortWithError(c, http.StatusBadRequest, ecode.InvalidCreateUserParams, err)
+		abortWithError(c, http.StatusBadRequest, "InvalidCreateUserParams", err)
 		return
 	}
 	user, err := model.CreateUser(&newUser)
 	if err != nil {
-		abortWithError(c, http.StatusBadRequest, ecode.FailToCreateUser, err)
+		abortWithError(c, http.StatusBadRequest, "FailToCreateUser", err)
 		return
 	}
 	// TODO: 返却する field の選択
@@ -55,51 +53,27 @@ func CreateUser(c *gin.Context) {
 }
 
 func UpdateUser(c *gin.Context) {
-	// TODO: API 保護用の middleware を追加したい
-
-	// Authorization ヘッダを確認
-	authHeader := c.Request.Header.Get("Authorization")
-	if authHeader == "" {
-		abortWithJSON(c, http.StatusUnauthorized, ecode.BlankAuthHeader)
-		return
-	}
-	auth := strings.Split(authHeader, "Bearer ")
-	authLen := len(auth)
-	if authLen < 2 {
-		abortWithJSON(c, http.StatusUnauthorized, ecode.InvalidAuthHeader)
-		return
-	}
 	// 対象の User ID を取得
-	id := c.Param("id")
-	if id == "" {
-		abortWithJSON(c, http.StatusBadRequest, ecode.BlankUserID)
+	_id := c.Param("id")
+	if _id == "" {
+		abortWithJSON(c, http.StatusBadRequest, "BlankUserID")
 		return
 	}
-	_id, err := strconv.ParseUint(id, 10, 64)
+	id, err := strconv.ParseUint(_id, 10, 64)
 	if err != nil {
-		abortWithError(c, http.StatusBadRequest, ecode.InvalidUserID, err)
-		return
-	}
-	// Authorization Token を取得・検証
-	token := strings.TrimSpace(auth[authLen - 1])
-	ok, err := jwt.Validate(token, _id)
-	if err != nil {
-		abortWithError(c, http.StatusBadRequest, ecode.FailToValidateAuthToken, err)
-		return
-	}
-	if !ok {
-		abortWithJSON(c, http.StatusBadRequest, ecode.InvalidAuthToken)
+		abortWithError(c, http.StatusBadRequest, "InvalidUserID", err)
 		return
 	}
 	// ユーザ更新
-	var newUser model.NewUser
-	if err := c.ShouldBindJSON(&newUser); err != nil {
-		abortWithError(c, http.StatusBadRequest, ecode.InvalidUpdateUserParams, err)
+	userParams := model.User{}
+	if err := c.ShouldBindJSON(&userParams); err != nil {
+		abortWithError(c, http.StatusBadRequest, "InvalidUpdateUserParams", err)
 		return
 	}
-	user, err := model.UpdateUser(_id, &newUser)
+	userParams.ID = id
+	user, err := model.UpdateUser(&userParams)
 	if err != nil {
-		abortWithError(c, http.StatusBadRequest, ecode.FailToUpdateUser, err)
+		abortWithError(c, http.StatusBadRequest, "FailToUpdateUser", err)
 		return
 	}
 	c.JSON(http.StatusOK, user)
@@ -108,16 +82,16 @@ func UpdateUser(c *gin.Context) {
 func DeleteUser(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		abortWithJSON(c, http.StatusBadRequest, ecode.BlankUserID)
+		abortWithJSON(c, http.StatusBadRequest, "BlankUserID")
 		return
 	}
 	_id, err := strconv.ParseUint(id, 10, 64)
 	if err != nil {
-		abortWithError(c, http.StatusBadRequest, ecode.InvalidUserID, err)
+		abortWithError(c, http.StatusBadRequest, "InvalidUserID", err)
 		return
 	}
 	if err := model.DeleteUser(_id); err != nil {
-		abortWithError(c, http.StatusBadRequest, ecode.FailToDeleteUser, err)
+		abortWithError(c, http.StatusBadRequest, "FailToDeleteUser", err)
 		return
 	}
 	c.String(http.StatusOK, "deleted")
@@ -132,16 +106,16 @@ type AuthParams struct {
 func AuthUser(c *gin.Context) {
 	var params AuthParams
 	if err := c.ShouldBindJSON(&params); err != nil {
-		abortWithError(c, http.StatusBadRequest, ecode.InvalidAuthUserParams, err)
+		abortWithError(c, http.StatusBadRequest, "InvalidAuthUserParams", err)
 		return
 	}
 
 	if params.Login == "" {
-		abortWithJSON(c, http.StatusBadRequest, ecode.BlankLogin)
+		abortWithJSON(c, http.StatusBadRequest, "BlankLogin")
 		return
 	}
 	if params.Password == "" {
-		abortWithJSON(c, http.StatusBadRequest, ecode.BlankPassword)
+		abortWithJSON(c, http.StatusBadRequest, "BlankPassword")
 		return
 	}
 
@@ -150,18 +124,18 @@ func AuthUser(c *gin.Context) {
 		[]string{"id", "encrypted_password", "login", "password_salt"},
 	)
 	if err != nil {
-		abortWithError(c, http.StatusBadRequest, ecode.FailToAuth, err)
+		abortWithError(c, http.StatusBadRequest, "FailToAuth", err)
 		return
 	}
 	// Password の検証
 	if !user.ValidPassword(params.Password) {
-		abortWithJSON(c, http.StatusBadRequest, ecode.FailToAuth)
+		abortWithJSON(c, http.StatusBadRequest, "FailToAuth")
 		return
 	}
 	// JWT Token 生成
 	token, err := jwt.Generate(user.ID, user.Login)
 	if err != nil {
-		abortWithError(c, http.StatusBadRequest, ecode.FailToGenerateAuthToken, err)
+		abortWithError(c, http.StatusBadRequest, "FailToGenerateAuthToken", err)
 		return
 	}
 	c.String(http.StatusOK, token)
