@@ -6,6 +6,7 @@ import (
 	"github.com/SongCastle/KoR/api"
 	"github.com/SongCastle/KoR/db"
 	"github.com/SongCastle/KoR/lib/encryptor"
+	"github.com/SongCastle/KoR/lib/jwt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -23,6 +24,7 @@ func load() error {
 		return err
 	}
 	encryptor.Init()
+	jwt.Init()
 	return nil
 }
 
@@ -49,6 +51,7 @@ func serve() {
 	v1.PUT("/users/:id", api.UpdateUser)
 	v1.POST("/users", api.CreateUser)
 	v1.DELETE("/users/:id", api.DeleteUser)
+	v1.PUT("/users/auth", api.AuthUser)
 
 	r.NoRoute(api.NoRoute)
 
