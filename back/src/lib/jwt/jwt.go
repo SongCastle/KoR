@@ -28,15 +28,27 @@ type CustomClaims struct {
 	*AdditionalClaims
 }
 
+type JWTToken struct {
+	ID    string
+	Token string
+}
+
+type JWTRawToken struct {
+	ID string
+	*AdditionalClaims
+}
+
 func Init() {
 	if secretEnv := os.Getenv("JWT_SECRET"); secretEnv != "" {
 		jwtSecret = secretEnv
 	}
 }
 
-func Generate(userID uint64, audience string) (string, error) {
-	t := jwt.New(jwt.GetSigningMethod(SignAlg))
-	now := time.Now()
+func Generate(uuid string, audience string, userID uint64) (*JWTToken, error) {
+	t, now := jwt.New(jwt.GetSigningMethod(SignAlg)), time.Now()
+	if uuid == "" {
+		uuid = random.Generate(UUIDLen)
+	}
 	t.Claims = &CustomClaims{
 		RegisteredClaims: &jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(now.Add(ValidTerm)),
@@ -44,17 +56,21 @@ func Generate(userID uint64, audience string) (string, error) {
 			NotBefore: jwt.NewNumericDate(now),
 			Issuer:    Issuer,
 			Subject:   Subject,
-			ID:        random.Generate(UUIDLen),
+			ID:        uuid,
 			Audience:  jwt.ClaimStrings{audience},
 		},
 		AdditionalClaims: &AdditionalClaims{
 			UserID: userID,
 		},
 	}
-	return t.SignedString([]byte(jwtSecret))
+	token, err := t.SignedString([]byte(jwtSecret))
+	if err != nil {
+		return nil, err
+	}
+	return &JWTToken{ID: uuid, Token: token}, nil
 }
 
-func Verify(tokenString string) (*AdditionalClaims, error) {
+func Verify(tokenString string) (*JWTRawToken, error) {
 	token, err := parse(tokenString)
 	if err != nil {
 		return nil, err
@@ -73,7 +89,10 @@ func Verify(tokenString string) (*AdditionalClaims, error) {
 	if claims.ExpiresAt.Before(now) {
 		return nil, errors.New("Expired Token")
 	}
-	return claims.AdditionalClaims, nil
+	return &JWTRawToken{
+		ID: claims.ID,
+		AdditionalClaims: claims.AdditionalClaims,
+	}, nil
 }
 
 func parse(tokenString string) (*jwt.Token, error) {
