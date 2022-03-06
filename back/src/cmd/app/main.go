@@ -53,8 +53,6 @@ func serve() {
 	{
 		v1.GET("/users", api.ShowUsers)
 		v1.GET("/users/:id", api.ShowUser)
-		// TODO: ユーザ作成後と合わせて、認証もした方が良いかも ...
-		// TODO: 認証する場合、 token からユーザを取得する API が必要になりそう
 		v1.POST("/users", api.CreateUser)
 		v1.PUT("/users/auth", api.AuthUser)
 

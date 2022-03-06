@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/SongCastle/KoR/lib/jwt"
+	"github.com/SongCastle/KoR/middleware"
 	"github.com/SongCastle/KoR/model"
 	"github.com/gin-gonic/gin"
 )
@@ -48,6 +49,18 @@ func CreateUser(c *gin.Context) {
 		abortWithError(c, http.StatusBadRequest, "FailToCreateUser", err)
 		return
 	}
+	// JWT Token 生成
+	jt, err := jwt.Generate(user.AuthUUID, user.Login, user.ID)
+	if err != nil {
+		abortWithError(c, http.StatusBadRequest, "FailToGenerateAuthToken", err)
+		return
+	}
+	if _, err:= model.UpdateUser(&model.UserParams{ID: user.ID, AuthUUID: &jt.ID}); err != nil {
+		abortWithError(c, http.StatusBadRequest, "FailToGiveAuthToken", err)
+		return
+	}
+	// Token をヘッダへセット
+	c.Header(middleware.TokenHeader, jt.Token)
 	c.JSON(http.StatusCreated, user)
 }
 

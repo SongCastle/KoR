@@ -11,7 +11,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const AuthorizationHeader = "Authorization"
+const (
+	AuthorizationHeader = "Authorization" // Request Header
+	TokenHeader = "X-Authorization-Token" // Response Header
+)
 
 func AuthHandleMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -44,6 +47,7 @@ func AuthHandleMiddleware() gin.HandlerFunc {
 		}
 		c.Set("CurrentUser", user)
 		log.Printf("[DEBUG] User#%d (%s)", user.ID, user.Login)
+		c.Header(TokenHeader, token)
 
 		c.Next()
 	}
