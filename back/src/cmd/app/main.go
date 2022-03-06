@@ -20,7 +20,7 @@ func main() {
 }
 
 func setUp() error {
-	if err := db.InitDB(); err != nil {
+	if err := db.SetUp(); err != nil {
 		return err
 	}
 	lib.SetUp()
