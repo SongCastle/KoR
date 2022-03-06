@@ -31,9 +31,9 @@ type User struct {
 	Login             string `json:"login,omitempty"`
 	Password          string `json:"password,omitempty"`
 	Email             string `json:"email,omitempty"`
-	PasswordSalt      string `json:"password_salt,omitempty"`
-	EncryptedPassword string `json:"encrypted_password,omitempty"`
-	AuthUUID          string `json:"auth_uuid,omitempty"`
+	PasswordSalt      string `json:"-,omitempty"`
+	EncryptedPassword string `json:"-,omitempty"`
+	AuthUUID          string `json:"-,omitempty"`
 	CreatedAt         time.Time `json:"created_at,omitempty"`
 	UpdatedAt         time.Time `json:"updated_at,omitempty"`
 }
@@ -57,6 +57,7 @@ func (u *User) EncryptPassword() error {
 		return err
 	}
 	u.EncryptedPassword = digest
+	u.Password = ""
 	return nil
 }
 
@@ -111,7 +112,7 @@ type UserParams struct {
 	Login    *string `json:"login"`
 	Password *string `json:"password"`
 	Email    *string `json:"email"`
-	AuthUUID *string `json:"auth_uuid"`
+	AuthUUID *string `json:"-"`
 }
 
 func CreateUser(userParams *UserParams) (*User, error) {
@@ -123,7 +124,7 @@ func CreateUser(userParams *UserParams) (*User, error) {
 	// TODO: 検証
 	user := &User{}
 	bindParamsToUser(userParams, user)
-	user.ID, user.AuthUUID = 0, ""
+	user.ID = 0
 	if err := conn.DB().Omit("Password").Create(user).Error; err != nil {
 		return nil, err
 	}
@@ -158,7 +159,7 @@ func DeleteUser(id uint64) error {
 		return err
 	}
 	defer conn.Close()
-	// TODO: 検証
+	// TODO: 検証, 存在しないユーザの対策
 	if err := conn.DB().Delete(&User{ID: id}).Error; err != nil {
 		return err
 	}

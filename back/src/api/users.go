@@ -48,7 +48,6 @@ func CreateUser(c *gin.Context) {
 		abortWithError(c, http.StatusBadRequest, "FailToCreateUser", err)
 		return
 	}
-	// TODO: 返却する field の選択
 	c.JSON(http.StatusCreated, user)
 }
 
@@ -70,7 +69,7 @@ func UpdateUser(c *gin.Context) {
 		abortWithError(c, http.StatusBadRequest, "InvalidUpdateUserParams", err)
 		return
 	}
-	userParams.ID, userParams.AuthUUID = id, nil
+	userParams.ID = id
 	user, err := model.UpdateUser(&userParams)
 	if err != nil {
 		abortWithError(c, http.StatusBadRequest, "FailToUpdateUser", err)
