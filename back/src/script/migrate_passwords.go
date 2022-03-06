@@ -17,7 +17,7 @@ import (
 
 func main() {
 	// DB 初期化
-	if err := db.InitDB(); err != nil {
+	if err := db.InitConf(); err != nil {
 		fmt.Printf("Error: %v\n", err)
 		fmt.Println("Failed to run.")
 		return
@@ -32,16 +32,17 @@ func main() {
 	}
 
 	// DB 接続
-	conn := db.NewDB()
-	if err := conn.Open(); err != nil {
+	client := db.MySQLClient{}
+	d, err := client.Connect()
+	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		fmt.Println("Failed to connect DB.")
 	}
-	defer conn.Close()
+	defer client.Close()
 
 	// User 一覧取得
 	var users []model.User
-	if err := conn.DB().Select("id, password").Find(&users).Error; err != nil {
+	if err := d.Select("id, password").Find(&users).Error; err != nil {
 		fmt.Printf("Error: %v\n", err)
 		fmt.Println("Failed to get Users list.")
 		return
@@ -63,7 +64,7 @@ func main() {
 			continue
 		}
 
-		if err := conn.DB().Model(user).Update(user).Error; err != nil {
+		if err := d.Model(user).Update(user).Error; err != nil {
 			fmt.Printf("Failed to Update (User#%d)\n", user.ID)
 			fmt.Printf("Error: %v\n\n", err)
 		} else {
