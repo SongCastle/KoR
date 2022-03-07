@@ -2,7 +2,6 @@ package model
 
 import (
 	"errors"
-	"reflect"
 
 	"github.com/SongCastle/KoR/db"
 	"github.com/jinzhu/gorm"
@@ -23,14 +22,6 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 type UserGetQuery struct {
 	ID    uint64
 	Login string
-}
-
-type UserParams struct {
-	ID       uint64
-	Login    *string `json:"login"`
-	Password *string `json:"password"`
-	Email    *string `json:"email"`
-	AuthUUID *string `json:"-"`
 }
 
 func GetUsers(cols ...[]string) ([]User, error) {
@@ -74,7 +65,7 @@ func GetUser(query *UserGetQuery, cols ...[]string) (*User, error) {
 func CreateUser(userParams *UserParams) (*User, error) {
 	// TODO: 検証
 	user := &User{}
-	bindParamsToUser(userParams, user)
+	user.BindParams(userParams)
 	user.ID = 0
 
 	err := db.Connect(func(d *gorm.DB) error {
@@ -93,7 +84,7 @@ func UpdateUser(userParams *UserParams) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	bindParamsToUser(userParams, user)
+	user.BindParams(userParams)
 
 	if err := user.EncryptPassword(); err != nil {
 		return nil, err
@@ -114,30 +105,4 @@ func DeleteUser(id uint64) error {
 	return db.Connect(func(d *gorm.DB) error {
 		return d.Delete(&User{ID: id}).Error
 	})
-}
-
-func bindParamsToUser(params *UserParams, user *User) {
-	rp, ru := reflect.ValueOf(params).Elem(), reflect.ValueOf(user).Elem()
-	rpt := rp.Type()
-	for i := 0; i < rpt.NumField(); i++ {
-		// params のフィールド名を取得
-		fn := rpt.Field(i).Name
-		if v := rp.FieldByName(fn); !v.IsZero() {
-			// user に同じフィールドがあるか確認
-			if v2 := ru.FieldByName(fn); v2 != (reflect.Value{}) {
-				if v.Kind() == v2.Kind() {
-					// 同じ型のフィールドが存在する場合、値をセットする
-					v2.Set(v)
-				} else {
-					// 型が違う場合、ポインタの参照先を確認する
-					if iv := reflect.Indirect(v); iv.IsValid() {
-						// 参照先の型が同じ型である場合、値をセットする
-						if iv.Kind() == v2.Kind() {
-							v2.Set(iv)
-						}
-					}
-				}
-			}
-		}
-	}
 }
