@@ -6,6 +6,11 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+func newConnection() *Connection {
+	c := newClient()
+	return &Connection{client: c, idledAt: time.Now(), Available: true}
+}
+
 type Connection struct {
 	client    *MySQLClient
 	idledAt   time.Time
@@ -32,9 +37,4 @@ func (c *Connection) Fresh() error {
 
 func (c *Connection) DB() (*gorm.DB, error) {
 	return c.client.Connect()
-}
-
-func newConnection() *Connection {
-	c := newClient()
-	return &Connection{client: c, idledAt: time.Now(), Available: true}
 }

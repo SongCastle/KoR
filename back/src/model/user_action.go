@@ -1,7 +1,7 @@
 package model
 
 import (
-	"errors"
+	"reflect"
 
 	"github.com/SongCastle/KoR/db"
 	"github.com/jinzhu/gorm"
@@ -9,14 +9,24 @@ import (
 
 // Hooks
 func (u *User) BeforeCreate(tx *gorm.DB) error {
-	if u.Login == "" {
-		return errors.New("Blank Login")
+	if err := u.ValidateLogin(); err != nil {
+		return err
 	}
-	if u.Password == "" {
-		return errors.New("Blank Password")
+	if err := u.ValidatePassword(); err != nil {
+		return err
 	}
-	u.EncryptPassword()
+	if err := u.EncryptPassword(); err != nil {
+		return err
+	}
 	return nil
+}
+
+type UserParams struct {
+	ID       uint64
+	Login    *string `json:"login"`
+	Password *string `json:"password"`
+	Email    *string `json:"email"`
+	AuthUUID *string `json:"-"`
 }
 
 type UserGetQuery struct {
@@ -63,7 +73,6 @@ func GetUser(query *UserGetQuery, cols ...[]string) (*User, error) {
 }
 
 func CreateUser(userParams *UserParams) (*User, error) {
-	// TODO: 検証
 	user := &User{}
 	user.BindParams(userParams)
 	user.ID = 0
@@ -79,15 +88,24 @@ func CreateUser(userParams *UserParams) (*User, error) {
 }
 
 func UpdateUser(userParams *UserParams) (*User, error) {
-	// TODO: 検証する (引数含む)
 	user, err := GetUser(&UserGetQuery{ID: userParams.ID})
 	if err != nil {
 		return nil, err
 	}
 	user.BindParams(userParams)
 
-	if err := user.EncryptPassword(); err != nil {
-		return nil, err
+	if userParams.Login != nil {
+		if err := user.ValidateLogin(); err != nil {
+			return nil, err
+		}
+	}
+	if userParams.Password != nil {
+		if err := user.ValidatePassword(); err != nil {
+			return nil, err
+		}
+		if err := user.EncryptPassword(); err != nil {
+			return nil, err
+		}
 	}
 
 	err = db.Connect(func(d *gorm.DB) error {
@@ -101,8 +119,55 @@ func UpdateUser(userParams *UserParams) (*User, error) {
 }
 
 func DeleteUser(id uint64) error {
-	// TODO: 検証, 存在しないユーザの対策
+	// TODO: 存在しないユーザの場合について
 	return db.Connect(func(d *gorm.DB) error {
 		return d.Delete(&User{ID: id}).Error
 	})
+}
+
+func existUser(query *UserGetQuery) (bool, error) {
+	count := int64(0)
+
+	err := db.Connect(func(d *gorm.DB) error {
+		user := &User{ID: query.ID, Login: query.Login}
+		return d.Model(user).Where(user).Count(&count).Error
+	})
+	return count > 0, err
+}
+
+func bindParamsToObject(params interface{}, obj interface{}) {
+	vp := reflect.ValueOf(params)
+	ivp := reflect.Indirect(vp)
+	// 引数が nil ポインタである、または非参照型である (Elem 取得不可)
+	if !ivp.IsValid() || vp == ivp {
+		return
+	}
+	vo := reflect.ValueOf(obj)
+	ivo := reflect.Indirect(vo)
+	if !ivo.IsValid() || vo == ivo {
+		return
+	}
+	rp, ro := vp.Elem(), vo.Elem()
+	rpt := rp.Type()
+	for i := 0; i < rpt.NumField(); i++ {
+		// params のフィールド名を取得
+		fn := rpt.Field(i).Name
+		if v := rp.FieldByName(fn); !v.IsZero() {
+			// obj に同じフィールドがあるか確認
+			if v2 := ro.FieldByName(fn); v2 != (reflect.Value{}) {
+				if v.Kind() == v2.Kind() {
+					// 同じ型のフィールドが存在する場合、値をセットする
+					v2.Set(v)
+				} else {
+					// 型が違う場合、ポインタの参照先を確認する
+					if iv := reflect.Indirect(v); iv.IsValid() {
+						// 参照先の型が同じ型である場合、値をセットする
+						if iv.Kind() == v2.Kind() {
+							v2.Set(iv)
+						}
+					}
+				}
+			}
+		}
+	}
 }

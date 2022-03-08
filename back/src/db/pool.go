@@ -2,7 +2,7 @@ package db
 
 import (
 	"errors"
-	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -32,7 +32,7 @@ func invoke() {
 				for i, c := range pool {
 					if !(c == nil || c.Active()) {
 						mu.Lock()
-						fmt.Printf("Reset Connection (err: %v)\n", c.Fresh())
+						log.Printf("Reset Connection %d (err: %v)\n", i, c.Fresh())
 						pool[i] = nil
 						mu.Unlock()
 					}
