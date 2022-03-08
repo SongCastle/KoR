@@ -1,10 +1,13 @@
 package encryptor
 
 import (
+	"errors"
 	"os"
 
 	"golang.org/x/crypto/bcrypt"
 )
+
+const maxPasswordByteSize = 72
 
 var (
 	pepper string
@@ -19,12 +22,20 @@ func Init() {
 }
 
 func Digest(password string) (string, error) {
-	digest, err := bcrypt.GenerateFromPassword([]byte(withPepper(password)), cost)
+	pw := withPepper(password)
+	if tooLongPassword(pw) {
+		return "", errors.New("Too Long")
+	}
+	digest, err := bcrypt.GenerateFromPassword([]byte(pw), cost)
 	return string(digest), err
 }
 
 func Compare(digest, password string) bool {
-	return bcrypt.CompareHashAndPassword([]byte(digest), []byte((withPepper(password)))) == nil
+	pw := withPepper(password)
+	if tooLongPassword(pw) {
+		return false
+	}
+	return bcrypt.CompareHashAndPassword([]byte(digest), []byte((pw))) == nil
 }
 
 func withPepper(password string) string {
@@ -32,4 +43,9 @@ func withPepper(password string) string {
 		return password
 	}
 	return password + pepper
+}
+
+// TODO: maxPasswordByteSize を超過できるようにしたい
+func tooLongPassword(password string) bool {
+	return len(password) > maxPasswordByteSize
 }

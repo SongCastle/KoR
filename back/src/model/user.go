@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"time"
 
 	"github.com/SongCastle/KoR/lib/encryptor"
@@ -40,6 +41,32 @@ func (u *User) EncryptPassword() error {
 	return nil
 }
 
+func (u *User) ValidateLogin() error {
+	if u.Login == "" {
+		return errors.New("Blank Login")
+	}
+	exist, err := existUser(&UserGetQuery{Login: u.Login})
+	if err != nil {
+		return err
+	}
+	// TODO: DB 制約の検討
+	if exist {
+		return errors.New("Duplicate Login")
+	}
+	return nil
+}
+
+func (u *User) ValidatePassword() error {
+	if u.Password == "" {
+		return errors.New("Blank Password")
+	}
+	return nil
+}
+
 func (u *User) ValidPassword(password string) bool {
 	return encryptor.Compare(u.EncryptedPassword, password + u.PasswordSalt)
+}
+
+func (u *User) BindParams(params *UserParams) {
+	bindParamsToObject(params, u)
 }
