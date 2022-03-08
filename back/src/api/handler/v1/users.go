@@ -178,7 +178,7 @@ func UnauthUser(c *gin.Context) {
 }
 
 func responseKeys() []string {
-	return []string{"id", "login", "email"}
+	return []string{"id", "login", "email", "created_at", "updated_at"}
 }
 
 func abortWithError(c *gin.Context, status int, code string, err error) {
