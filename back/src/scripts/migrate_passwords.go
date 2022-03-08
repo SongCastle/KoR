@@ -1,5 +1,5 @@
 // 暗号化していないパスワードを、暗号化したものへ移行します。
-// $ MYSQL_PASSWORD=<password> go run script/migrate_passwords.go
+// $ MYSQL_PASSWORD=<password> go run scripts/migrate_passwords.go
 // ### 注意点 ###
 // 実行にあたり、環境変数 `PASSWORD_PEPPER` を設定してください。
 // DB マイグレーションは 20220129012448 まで実施している必要があります。
@@ -10,9 +10,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/SongCastle/KoR/db"
-	"github.com/SongCastle/KoR/lib/encryptor"
-	"github.com/SongCastle/KoR/model"
+	"github.com/SongCastle/KoR/api/model"
+	"github.com/SongCastle/KoR/internal/encryptor"
+	"github.com/SongCastle/KoR/volume/db"
 )
 
 func main() {

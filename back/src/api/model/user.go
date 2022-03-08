@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/SongCastle/KoR/lib/encryptor"
-	"github.com/SongCastle/KoR/lib/random"
+	"github.com/SongCastle/KoR/internal/encryptor"
+	"github.com/SongCastle/KoR/internal/random"
 )
 
 // password_salt の長さ

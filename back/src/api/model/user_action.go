@@ -3,7 +3,7 @@ package model
 import (
 	"reflect"
 
-	"github.com/SongCastle/KoR/db"
+	"github.com/SongCastle/KoR/volume/db"
 	"github.com/jinzhu/gorm"
 )
 
