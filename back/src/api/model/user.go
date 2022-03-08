@@ -63,7 +63,7 @@ func (u *User) ValidatePassword() error {
 	return nil
 }
 
-func (u *User) ValidPassword(password string) bool {
+func (u *User) TestPassword(password string) bool {
 	return encryptor.Compare(u.EncryptedPassword, password + u.PasswordSalt)
 }
 

@@ -141,7 +141,7 @@ func AuthUser(c *gin.Context) {
 		return
 	}
 	// Password の検証
-	if !user.ValidPassword(params.Password) {
+	if !user.TestPassword(params.Password) {
 		abortWithJSON(c, http.StatusBadRequest, "FailToAuth")
 		return
 	}

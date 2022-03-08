@@ -70,7 +70,7 @@ func main() {
 		} else {
 			fmt.Printf("Success to Update (User#%d)\n", user.ID)
 			fmt.Printf("Encrypted Password: %s\n", user.EncryptedPassword)
-			fmt.Printf("Password Validity: %t\n\n", user.ValidPassword(user.Password))
+			fmt.Printf("Password Validity: %t\n\n", user.TestPassword(user.Password))
 		}
 	}
 }
