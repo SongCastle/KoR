@@ -18,21 +18,24 @@ DELETE /v1/users/auth # ユーザ認証無効化
 
 ##### 疎通確認
 ```
-$ curl 0.0.0.0:3000/v1/ping 
-pong
+$ curl 0.0.0.0:3000/v1/ping
+> pong
 ```
 
 ##### ユーザ操作
 ```
 # 作成
 $ curl -X POST 0.0.0.0:3000/v1/users -H 'Content-Type: application/json' -d '{"login": "user", "password": "user1234", "email": "user@example.com"}'
-{"login":"user","password":"user1234","email":"user@example.com","id":1,"created_at":"2022-01-15T10:50:20.3272622Z","updated_at":"2022-01-15T10:50:20.3272622Z"}
+> {"id":1,"login":"user","email":"user@example.com","created_at":"2022-01-15T10:50:20.3272622Z","updated_at":"2022-01-15T10:50:20.3272622Z"}
 
 # 取得
 $ curl 0.0.0.0:3000/v1/users/1
-{"login":"user","email":"user@example.com","id":1,"created_at":"0001-01-01T00:00:00Z","updated_at":"0001-01-01T00:00:00Z"}
+> {"id":1,"login":"user","email":"user@example.com","created_at":"2022-01-15T10:50:20.3272622Z","updated_at":"2022-01-15T10:50:20.3272622Z"}
 
 # 削除
-$ curl -X DELETE 0.0.0.0:3000/v1/users/1
-deleted
+$ curl -X DELETE -H 'Authorization: Bearer <token>' 0.0.0.0:3000/v1/users/1
+
+# 認証
+$ curl -X PUT -H 0.0.0.0:3000/v1/users/1/auth -H 'Content-Type: application/json' -d '{"login": "user", "password": "user1234"}'
+> <token>
 ```
