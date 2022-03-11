@@ -29,7 +29,7 @@ var (
 	Regex     *regexp.Regexp   = regexp.MustCompile(`^\$argon2id`)
 	HashRegex *regexp.Regexp   = regexp.MustCompile(`^\$argon2id\$v=(\d+)\$m=(\d+),t=(\d+),p=(\d+)\$([[:alnum:]+/]+)\$([[:alnum:]+/]+)$`)
 	InvalidHashFormat error    = errors.New("invalid_hash_format")
-	InvalidComplexity error    = errors.New("invalid_complexityt")
+	InvalidComplexity error    = errors.New("invalid_complexity")
 )
 
 type rawHash struct {
