@@ -57,7 +57,7 @@ func Compare(hash, password string) bool {
 	calcHash := argon2.IDKey(
 		[]byte(password), raw.salt, TimeCost, Memory, Parallelism, KeyLen,
 	)
-	return subtle.ConstantTimeCompare([]byte(raw.hash), calcHash) == 1
+	return subtle.ConstantTimeCompare(raw.hash, calcHash) == 1
 }
 
 func EncryptedByArgon2id(hash string) bool {
