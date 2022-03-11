@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/SongCastle/KoR/lib/encryptor"
-	"github.com/SongCastle/KoR/lib/random"
+	"github.com/SongCastle/KoR/internal/encryptor"
+	"github.com/SongCastle/KoR/internal/random"
 )
 
 // password_salt の長さ
@@ -63,7 +63,7 @@ func (u *User) ValidatePassword() error {
 	return nil
 }
 
-func (u *User) ValidPassword(password string) bool {
+func (u *User) TestPassword(password string) bool {
 	return encryptor.Compare(u.EncryptedPassword, password + u.PasswordSalt)
 }
 

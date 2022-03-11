@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/SongCastle/KoR/ecode"
-	"github.com/SongCastle/KoR/lib/jwt"
-	"github.com/SongCastle/KoR/model"
+	"github.com/SongCastle/KoR/api/model"
+	"github.com/SongCastle/KoR/internal/ecode"
+	"github.com/SongCastle/KoR/internal/jwt"
 	"github.com/gin-gonic/gin"
 )
 

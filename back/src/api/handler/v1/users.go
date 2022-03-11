@@ -1,12 +1,13 @@
-package api
+package v1
 
 import (
 	"net/http"
 	"strconv"
 
-	"github.com/SongCastle/KoR/lib/jwt"
-	"github.com/SongCastle/KoR/middleware"
-	"github.com/SongCastle/KoR/model"
+	"github.com/SongCastle/KoR/api/middleware"
+	"github.com/SongCastle/KoR/api/model"
+	"github.com/SongCastle/KoR/internal/ecode"
+	"github.com/SongCastle/KoR/internal/jwt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -140,7 +141,7 @@ func AuthUser(c *gin.Context) {
 		return
 	}
 	// Password の検証
-	if !user.ValidPassword(params.Password) {
+	if !user.TestPassword(params.Password) {
 		abortWithJSON(c, http.StatusBadRequest, "FailToAuth")
 		return
 	}
@@ -177,5 +178,13 @@ func UnauthUser(c *gin.Context) {
 }
 
 func responseKeys() []string {
-	return []string{"id", "login", "email"}
+	return []string{"id", "login", "email", "created_at", "updated_at"}
+}
+
+func abortWithError(c *gin.Context, status int, code string, err error) {
+	c.AbortWithError(status, err).SetMeta(ecode.CodeJson(code))
+}
+
+func abortWithJSON(c *gin.Context, status int, code string) {
+	c.AbortWithStatusJSON(status, ecode.CodeJson(code))
 }

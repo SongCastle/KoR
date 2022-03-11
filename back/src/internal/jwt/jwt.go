@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/SongCastle/KoR/lib/random"
+	"github.com/SongCastle/KoR/internal/random"
 	"github.com/golang-jwt/jwt/v4"
 )
 
