@@ -7,8 +7,11 @@ import (
 )
 
 func newConnection() *Connection {
-	c := newClient()
-	return &Connection{client: c, idledAt: time.Now(), Available: true}
+	return &Connection{
+		client: newClient(),
+		idledAt: time.Now(),
+		Available: true,
+	}
 }
 
 type Connection struct {

@@ -11,7 +11,8 @@ import (
 
 const (
 	PoolSize    = 5
-	WaitTime    = 5 * time.Second
+	RetryTimes  = 5
+	WaitTime    = time.Second
 	MaxIdleTime = 3 * time.Minute
 )
 
@@ -43,7 +44,7 @@ func invoke() {
 	}()
 }
 
-func connection() (*Connection, error) {
+func retrieveConnection() (*Connection, error) {
 	mu.Lock()
 	defer mu.Unlock()
 	for i, c := range pool {
@@ -59,17 +60,25 @@ func connection() (*Connection, error) {
 	return nil, timeoutError
 }
 
+func connection() (*Connection, error) {
+	c, err := retrieveConnection()
+	if err == nil {
+		return c, nil
+	}
+	for i := 0; i < RetryTimes; i++ {
+		time.Sleep(WaitTime)
+		c, err = retrieveConnection()
+		if err == nil {
+			return c, nil
+		}
+	}
+	return nil, err
+}
+
 func Connect(f func(db *gorm.DB) error) error {
 	c, err := connection()
 	if err != nil {
-		if err != timeoutError {
-			return err
-		}
-		time.Sleep(WaitTime)
-		c, err = connection()
-		if err != nil {
-			return err
-		}
+		return err
 	}
 	defer c.Unlock()
 
