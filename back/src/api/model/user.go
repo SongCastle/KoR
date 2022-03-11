@@ -49,7 +49,6 @@ func (u *User) ValidateLogin() error {
 	if err != nil {
 		return err
 	}
-	// TODO: DB 制約の検討
 	if exist {
 		return errors.New("Duplicate Login")
 	}
