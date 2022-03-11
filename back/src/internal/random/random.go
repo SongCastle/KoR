@@ -1,6 +1,7 @@
 package random
 
 import (
+	// TODO: "crypto/rand" にする
 	"math/rand"
 	"time"
 	"strconv"

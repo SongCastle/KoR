@@ -1,51 +1,40 @@
 package encryptor
 
 import (
-	"errors"
 	"os"
 
-	"golang.org/x/crypto/bcrypt"
+	"github.com/SongCastle/KoR/internal/encryptor/argon2id"
+	"github.com/SongCastle/KoR/internal/encryptor/bcrypt"
 )
 
-const maxPasswordByteSize = 72
+const UseArgon2id = true
 
-var (
-	pepper string
-	cost int
-)
+var Pepper string = "pepper1234"
 
 func Init() {
-	if _pepper := os.Getenv("PASSWORD_PEPPER"); pepper != "" {
-		pepper = _pepper
+	if pepper := os.Getenv("PASSWORD_PEPPER"); pepper != "" {
+		Pepper = pepper
 	}
-	cost = bcrypt.DefaultCost
 }
 
 func Digest(password string) (string, error) {
-	pw := withPepper(password)
-	if tooLongPassword(pw) {
-		return "", errors.New("Too Long")
+	if UseArgon2id {
+		return argon2id.Digest(withPepper(password))
 	}
-	digest, err := bcrypt.GenerateFromPassword([]byte(pw), cost)
-	return string(digest), err
+	return bcrypt.Digest(withPepper(password))
 }
 
 func Compare(digest, password string) bool {
-	pw := withPepper(password)
-	if tooLongPassword(pw) {
-		return false
+	if argon2id.EncryptedByArgon2id(digest) {
+		return argon2id.Compare(digest, withPepper(password))
 	}
-	return bcrypt.CompareHashAndPassword([]byte(digest), []byte((pw))) == nil
+	return bcrypt.Compare(digest, withPepper(password))
 }
 
+// MEMO: salt + pepper の長さは 16 bytes 以上にする
 func withPepper(password string) string {
-	if pepper == "" {
+	if Pepper == "" {
 		return password
 	}
-	return password + pepper
-}
-
-// TODO: maxPasswordByteSize を超過できるようにしたい
-func tooLongPassword(password string) bool {
-	return len(password) > maxPasswordByteSize
+	return password + Pepper
 }
