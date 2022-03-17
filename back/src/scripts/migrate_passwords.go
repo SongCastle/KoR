@@ -1,5 +1,5 @@
 // 暗号化していないパスワードを、暗号化したものへ移行します。
-// $ MYSQL_PASSWORD=<password> go run script/migrate_passwords.go
+// $ MYSQL_PASSWORD=<password> go run scripts/migrate_passwords.go
 // ### 注意点 ###
 // 実行にあたり、環境変数 `PASSWORD_PEPPER` を設定してください。
 // DB マイグレーションは 20220129012448 まで実施している必要があります。
@@ -10,14 +10,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/SongCastle/KoR/db"
-	"github.com/SongCastle/KoR/lib/encryptor"
-	"github.com/SongCastle/KoR/model"
+	"github.com/SongCastle/KoR/api/model"
+	"github.com/SongCastle/KoR/internal/encryptor"
+	"github.com/SongCastle/KoR/volume/db"
 )
 
 func main() {
 	// DB 初期化
-	if err := db.InitDB(); err != nil {
+	if err := db.InitConf(); err != nil {
 		fmt.Printf("Error: %v\n", err)
 		fmt.Println("Failed to run.")
 		return
@@ -32,16 +32,17 @@ func main() {
 	}
 
 	// DB 接続
-	conn := db.NewDB()
-	if err := conn.Open(); err != nil {
+	client := db.MySQLClient{}
+	d, err := client.Connect()
+	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		fmt.Println("Failed to connect DB.")
 	}
-	defer conn.Close()
+	defer client.Close()
 
 	// User 一覧取得
 	var users []model.User
-	if err := conn.DB().Select("id, password").Find(&users).Error; err != nil {
+	if err := d.Select("id, password").Find(&users).Error; err != nil {
 		fmt.Printf("Error: %v\n", err)
 		fmt.Println("Failed to get Users list.")
 		return
@@ -58,19 +59,18 @@ func main() {
 		if user.Password == "" {
 			user.Password = defaultPassword
 		}
-		user.SetPasswordSolt()
 		if err := user.EncryptPassword(); err != nil {
 			fmt.Printf("Failed to encrypt Password (User#%d)\n\n", user.ID)
 			continue
 		}
 
-		if err := conn.DB().Model(user).Update(user).Error; err != nil {
+		if err := d.Model(user).Update(user).Error; err != nil {
 			fmt.Printf("Failed to Update (User#%d)\n", user.ID)
 			fmt.Printf("Error: %v\n\n", err)
 		} else {
 			fmt.Printf("Success to Update (User#%d)\n", user.ID)
 			fmt.Printf("Encrypted Password: %s\n", user.EncryptedPassword)
-			fmt.Printf("Password Validity: %t\n\n", user.ValidPassword(user.Password))
+			fmt.Printf("Password Validity: %t\n\n", user.TestPassword(user.Password))
 		}
 	}
 }
