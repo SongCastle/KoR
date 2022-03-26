@@ -1,12 +1,9 @@
 package router
 
 import (
-	"os"
-
 	h0 "github.com/SongCastle/KoR/api/handler/v0"
 	h1 "github.com/SongCastle/KoR/api/handler/v1"
 	"github.com/SongCastle/KoR/api/middleware"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,16 +14,9 @@ func Routes() *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Logger(), gin.Recovery())
 
-	if frontHost := os.Getenv("FRONT_HOST"); frontHost != "" {
-		r.Use(cors.New(cors.Config{
-			AllowOrigins: []string{frontHost},
-			AllowHeaders: []string{
-				"Access-Control-Allow-Headers",
-				"Content-Type",
-			},
-			AllowMethods: []string{"PUT", "DELETE"},
-		}))
-	}
+	middleware.UseCorsMiddleware(func(corsMiddleware gin.HandlerFunc){
+		r.Use(corsMiddleware)
+	})
 
 	r.GET("/ping", h0.Ping)
 
