@@ -50,14 +50,15 @@ func CreateUser(c *gin.Context) {
 		abortWithError(c, http.StatusBadRequest, "FailToCreateUser", err)
 		return
 	}
-	// JWT Token 生成
-	jt, err := jwt.Generate(user.AuthUUID, user.Login, user.ID)
-	if err != nil {
+
+	if err := user.CreateToken(); err != nil {
 		abortWithError(c, http.StatusBadRequest, "FailToGenerateAuthToken", err)
 		return
 	}
-	if _, err:= model.UpdateUser(&model.UserParams{ID: user.ID, AuthUUID: &jt.ID}); err != nil {
-		abortWithError(c, http.StatusBadRequest, "FailToGiveAuthToken", err)
+	// JWT Token 生成
+	jt, err := jwt.Generate(user.CurrentToken.UUID, user.Login, user.ID)
+	if err != nil {
+		abortWithError(c, http.StatusBadRequest, "FailToGenerateAuthToken", err)
 		return
 	}
 	// Token をヘッダへセット
@@ -145,14 +146,15 @@ func AuthUser(c *gin.Context) {
 		abortWithJSON(c, http.StatusBadRequest, "FailToAuth")
 		return
 	}
-	// JWT Token 生成
-	jt, err := jwt.Generate(user.AuthUUID, user.Login, user.ID)
-	if err != nil {
+
+	if err := user.CreateToken(); err != nil {
 		abortWithError(c, http.StatusBadRequest, "FailToGenerateAuthToken", err)
 		return
 	}
-	if _, err:= model.UpdateUser(&model.UserParams{ID: user.ID, AuthUUID: &jt.ID}); err != nil {
-		abortWithError(c, http.StatusBadRequest, "FailToGiveAuthToken", err)
+	// JWT Token 生成
+	jt, err := jwt.Generate(user.CurrentToken.UUID, user.Login, user.ID)
+	if err != nil {
+		abortWithError(c, http.StatusBadRequest, "FailToGenerateAuthToken", err)
 		return
 	}
 	c.String(http.StatusOK, jt.Token)
@@ -169,8 +171,7 @@ func UnauthUser(c *gin.Context) {
 		abortWithJSON(c, http.StatusBadRequest, "UnidentifiedUser")
 		return
 	}
-	blankUUID := ""
-	if _, err:= model.UpdateUser(&model.UserParams{ID: user.ID, AuthUUID: &blankUUID}); err != nil {
+	if err := model.DeleteToken(user.CurrentToken.ID); err != nil {
 		abortWithError(c, http.StatusBadRequest, "FailToDeleteAuthToken", err)
 		return
 	}

@@ -21,7 +21,6 @@ var codeTable map[string]string = map[string]string{
 	"BlankPassword"          : "blank_password",
 	"FailToAuth"             : "invalid_login_or_password",
 	"FailToGenerateAuthToken": "fail_to_generate_authorization_token",
-	"FailToGiveAuthToken"    : "fail_to_give_authorization_token",
 	"UnidentifiedUser"       : "unidentified_user",
 	"FailToDeleteAuthToken"  : "fail_to_delete_authorization_token",
 }

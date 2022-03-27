@@ -31,23 +31,31 @@ func AuthHandleMiddleware() gin.HandlerFunc {
 			return
 		}
 		// Authorization Token を取得・検証
-		token := strings.TrimSpace(auth[authLen - 1])
-		rjt, err := jwt.Verify(token)
+		// TODO: 期限切れの JWT Token について
+		jToken := strings.TrimSpace(auth[authLen - 1])
+		rjt, err := jwt.Verify(jToken)
 		if err != nil {
 			c.AbortWithError(http.StatusBadRequest, err).SetMeta(ecode.CodeJson("FailToValidateAuthToken"))
 			return
 		}
+		// JWT Token からユーザを検索
 		user, err := model.GetUser(
 			&model.UserGetQuery{ID: rjt.UserID},
-			[]string{"id", "login", "email", "auth_uuid"},
+			[]string{"id", "login", "email"},
 		)
-		if err != nil || user.AuthUUID != rjt.ID {
+		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, ecode.CodeJson("InvalidAuthToken"))
 			return
 		}
+		token, err := model.GetToken(&model.TokenGetQuery{UserID: rjt.UserID, UUID: rjt.ID})
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, ecode.CodeJson("InvalidAuthToken"))
+			return
+		}
+		user.CurrentToken = token
 		c.Set("CurrentUser", user)
 		log.Printf("[DEBUG] User#%d (%s)", user.ID, user.Login)
-		c.Header(TokenHeader, token)
+		c.Header(TokenHeader, jToken)
 
 		c.Next()
 	}

@@ -19,12 +19,27 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 	return nil
 }
 
+func (u *User) BeforeDelete(tx *gorm.DB) error {
+	tokens, err := GetTokens(func (db *gorm.DB) *gorm.DB {
+		return db.Select([]string{"id"}).Where(&Token{UserID: u.ID})
+	})
+	if err != nil {
+		return err
+	}
+	for _, token := range tokens {
+		err := DeleteToken(token.ID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 type UserParams struct {
 	ID       uint64
 	Login    *string `json:"login"`
 	Password *string `json:"password"`
 	Email    *string `json:"email"`
-	AuthUUID *string `json:"-"`
 }
 
 type UserGetQuery struct {

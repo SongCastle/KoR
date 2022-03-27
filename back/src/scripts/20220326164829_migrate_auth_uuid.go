@@ -32,11 +32,8 @@ func main() {
 		return
 	}
 
-	var (
-		users []User
-		aType string  = "users"
-		right []uint8 = []uint8{0, 0, 0, 0, 0, 0, 0, 15}
-	)
+	var users []User
+	const all = false
 
 	err := db.Connect(func(d *gorm.DB) error {
 		return d.Select([]string{"id", "login", "auth_uuid"}).Find(&users).Error
@@ -64,10 +61,14 @@ func main() {
 			continue
 		}
 
-		authParams := &model.AuthorityParams{
-			TokenID: token.ID, Type: &aType, Right: right,
-		}
-		auth, err := model.CreateAuthority(authParams)
+		auth, err := model.CreateAuthority(
+			model.WithTokenID(token.ID),
+			model.WithUsersRight(),
+			model.WithCreateRight(all),
+			model.WithReadRight(all),
+			model.WithUpdateRight(all),
+			model.WithDeleteRight(all),
+		)
 		if err != nil {
 			fmt.Printf("Failed to Create Authority: %v\n", err)
 			continue

@@ -12,13 +12,13 @@ import (
 const UserPasswordSaltLen = 32
 
 type User struct {
-	ID                uint64 `json:"id,omitempty",gorm:"primaryKey"`
-	Login             string `json:"login,omitempty"`
-	Password          string `json:"password,omitempty"`
-	Email             string `json:"email,omitempty"`
-	PasswordSalt      string `json:"-,omitempty"`
-	EncryptedPassword string `json:"-,omitempty"`
-	AuthUUID          string `json:"-,omitempty"`
+	ID                uint64    `json:"id,omitempty",gorm:"primaryKey"`
+	Login             string    `json:"login,omitempty"`
+	Password          string    `json:"password,omitempty"`
+	Email             string    `json:"email,omitempty"`
+	PasswordSalt      string    `json:"-,omitempty"`
+	EncryptedPassword string    `json:"-,omitempty"`
+	CurrentToken      *Token    `json:"-"`
 	CreatedAt         time.Time `json:"created_at,omitempty"`
 	UpdatedAt         time.Time `json:"updated_at,omitempty"`
 }
@@ -59,6 +59,18 @@ func (u *User) ValidatePassword() error {
 	if u.Password == "" {
 		return errors.New("Blank Password")
 	}
+	return nil
+}
+
+func (u *User) CreateToken() error {
+	token, err := CreateToken(&TokenParams{UserID: u.ID})
+	if err != nil {
+		return err
+	}
+	if err := token.AddUserAuthority(false); err != nil {
+		return err
+	}
+	u.CurrentToken = token
 	return nil
 }
 

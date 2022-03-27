@@ -24,11 +24,15 @@ func (a *Authority) BeforeCreate(tx *gorm.DB) error {
 	return nil
 }
 
-type AuthorityParams struct {
-	ID        uint64
-	TokenID   uint64  `json:"token_id"`
-	Type      *string  `json:"type"`
-	Right     []uint8 `json:"right"`
+func GetAuthorities(query func(*gorm.DB) *gorm.DB) ([]Authority, error) {
+	var authes []Authority
+	err := db.Connect(func(d *gorm.DB) error {
+		return query(d).Find(&authes).Error
+	})
+	if err == nil {
+		return authes, nil
+	}
+	return nil, err
 }
 
 func GetAuthority(id uint64) (*Authority, error) {
@@ -42,10 +46,9 @@ func GetAuthority(id uint64) (*Authority, error) {
 	return nil, err
 }
 
-func CreateAuthority(params *AuthorityParams) (*Authority, error) {
+func CreateAuthority(adds ...AuthorityBuilder) (*Authority, error) {
 	auth := &Authority{}
-	auth.BindParams(params)
-	auth.ID = 0
+	auth.Build(adds...)
 
 	err := db.Connect(func(d *gorm.DB) error {
 		return d.Create(&auth).Error
@@ -55,4 +58,10 @@ func CreateAuthority(params *AuthorityParams) (*Authority, error) {
 		return auth, nil
 	}
 	return nil, err
+}
+
+func DeleteAuthority(id uint64) error {
+	return db.Connect(func(d *gorm.DB) error {
+		return d.Delete(&Authority{ID: id}).Error
+	})
 }
