@@ -12,7 +12,7 @@ import (
 )
 
 func ShowUsers(c *gin.Context) {
-	users, err := model.GetUsers(responseKeys())
+	users, err := model.GetUsers(responseKeys()...)
 	if err != nil {
 		abortWithError(c, http.StatusBadRequest, "FailToGetUsers", err)
 		return
