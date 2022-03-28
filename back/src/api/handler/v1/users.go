@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -12,6 +13,17 @@ import (
 )
 
 func ShowUsers(c *gin.Context) {
+	// 権限確認
+	cUser, err := currentUser(c)
+	if err != nil {
+		abortWithJSON(c, http.StatusBadRequest, "UnidentifiedUser")
+		return
+	}
+	if !cUser.CurrentToken.UserAuthority().CanRead(true) {
+		abortWithJSON(c, http.StatusUnauthorized, "NotPermitted")
+		return
+	}
+	// ユーザ取得
 	users, err := model.GetUsers(responseKeys()...)
 	if err != nil {
 		abortWithError(c, http.StatusBadRequest, "FailToGetUsers", err)
@@ -21,17 +33,28 @@ func ShowUsers(c *gin.Context) {
 }
 
 func ShowUser(c *gin.Context) {
-	id := c.Param("id")
-	if id == "" {
+	sid := c.Param("id")
+	if sid == "" {
 		abortWithJSON(c, http.StatusBadRequest, "BlankUserID")
 		return
 	}
-	_id, err := strconv.ParseUint(id, 10, 64)
+	id, err := strconv.ParseUint(sid, 10, 64)
 	if err != nil {
 		abortWithError(c, http.StatusBadRequest, "InvalidUserID", err)
 		return
 	}
-	user, err := model.GetUser(&model.UserGetQuery{ID: _id}, responseKeys())
+	// 権限確認
+	cUser, err := currentUser(c)
+	if err != nil {
+		abortWithJSON(c, http.StatusBadRequest, "UnidentifiedUser")
+		return
+	}
+	if !cUser.CurrentToken.UserAuthority().CanRead(id != cUser.ID) {
+		abortWithJSON(c, http.StatusUnauthorized, "NotPermitted")
+		return
+	}
+	// ユーザ取得
+	user, err := model.GetUser(&model.UserGetQuery{ID: id}, responseKeys())
 	if err != nil {
 		abortWithError(c, http.StatusBadRequest, "FailToGetUser", err)
 		return
@@ -68,14 +91,24 @@ func CreateUser(c *gin.Context) {
 
 func UpdateUser(c *gin.Context) {
 	// 対象の User ID を取得
-	_id := c.Param("id")
-	if _id == "" {
+	sid := c.Param("id")
+	if sid == "" {
 		abortWithJSON(c, http.StatusBadRequest, "BlankUserID")
 		return
 	}
-	id, err := strconv.ParseUint(_id, 10, 64)
+	id, err := strconv.ParseUint(sid, 10, 64)
 	if err != nil {
 		abortWithError(c, http.StatusBadRequest, "InvalidUserID", err)
+		return
+	}
+	// 権限確認
+	cUser, err := currentUser(c)
+	if err != nil {
+		abortWithJSON(c, http.StatusBadRequest, "UnidentifiedUser")
+		return
+	}
+	if !cUser.CurrentToken.UserAuthority().CanUpdate(id != cUser.ID) {
+		abortWithJSON(c, http.StatusUnauthorized, "NotPermitted")
 		return
 	}
 	// ユーザ更新
@@ -94,17 +127,28 @@ func UpdateUser(c *gin.Context) {
 }
 
 func DeleteUser(c *gin.Context) {
-	id := c.Param("id")
-	if id == "" {
+	sid := c.Param("id")
+	if sid == "" {
 		abortWithJSON(c, http.StatusBadRequest, "BlankUserID")
 		return
 	}
-	_id, err := strconv.ParseUint(id, 10, 64)
+	id, err := strconv.ParseUint(sid, 10, 64)
 	if err != nil {
 		abortWithError(c, http.StatusBadRequest, "InvalidUserID", err)
 		return
 	}
-	if err := model.DeleteUser(_id); err != nil {
+	// 権限確認
+	cUser, err := currentUser(c)
+	if err != nil {
+		abortWithJSON(c, http.StatusBadRequest, "UnidentifiedUser")
+		return
+	}
+	if !cUser.CurrentToken.UserAuthority().CanDelete(id != cUser.ID) {
+		abortWithJSON(c, http.StatusUnauthorized, "NotPermitted")
+		return
+	}
+	// ユーザ削除
+	if err := model.DeleteUser(id); err != nil {
 		abortWithError(c, http.StatusBadRequest, "FailToDeleteUser", err)
 		return
 	}
@@ -180,6 +224,18 @@ func UnauthUser(c *gin.Context) {
 
 func responseKeys() []string {
 	return []string{"id", "login", "email", "created_at", "updated_at"}
+}
+
+func currentUser(c *gin.Context) (*model.User, error) {
+	_user, ok := c.Get("CurrentUser")
+	if !ok {
+		return nil, fmt.Errorf("UnidentifiedUser")
+	}
+	user, ok := _user.(*model.User)
+	if !ok {
+		return nil, fmt.Errorf("UnidentifiedUser")
+	}
+	return user, nil
 }
 
 func abortWithError(c *gin.Context, status int, code string, err error) {

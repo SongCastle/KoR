@@ -39,13 +39,11 @@ func WithUsersRight() AuthorityBuilder {
 
 func WithCreateRight(all bool) AuthorityBuilder {
 	return func(a *Authority) {
-		if all {
-			if !a.CanAllCreate() {
+		if !a.CanCreate(all) {
+			if all {
 				a.addAllCRUDRight(CREATE)
+				return
 			}
-			return
-		}
-		if !a.CanCreate() {
 			a.addCRUDRight(CREATE)
 		}
 	}
@@ -53,13 +51,11 @@ func WithCreateRight(all bool) AuthorityBuilder {
 
 func WithReadRight(all bool) AuthorityBuilder {
 	return func(a *Authority) {
-		if all {
-			if !a.CanAllRead() {
+		if !a.CanRead(all) {
+			if all {
 				a.addAllCRUDRight(READ)
+				return
 			}
-			return
-		}
-		if !a.CanRead() {
 			a.addCRUDRight(READ)
 		}
 	}
@@ -67,13 +63,11 @@ func WithReadRight(all bool) AuthorityBuilder {
 
 func WithUpdateRight(all bool) AuthorityBuilder {
 	return func(a *Authority) {
-		if all {
-			if !a.CanAllUpdate() {
+		if !a.CanUpdate(all) {
+			if all {
 				a.addAllCRUDRight(UPDATE)
+				return
 			}
-			return
-		}
-		if !a.CanUpdate() {
 			a.addCRUDRight(UPDATE)
 		}
 	}
@@ -81,13 +75,11 @@ func WithUpdateRight(all bool) AuthorityBuilder {
 
 func WithDeleteRight(all bool) AuthorityBuilder {
 	return func(a *Authority) {
-		if all {
-			if !a.CanAllDelete() {
+		if !a.CanDelete(all) {
+			if all {
 				a.addAllCRUDRight(DELETE)
+				return
 			}
-			return
-		}
-		if !a.CanDelete() {
 			a.addCRUDRight(DELETE)
 		}
 	}
@@ -99,36 +91,24 @@ func (a *Authority) Build(adds ...AuthorityBuilder) {
 	}
 }
 
-func (a *Authority) CanCreate() bool {
-	return a.can(CREATE)
+func (a *Authority) IsUserRight() bool {
+	return a.Type == UserType
 }
 
-func (a *Authority) CanRead() bool {
-	return a.can(READ)
+func (a *Authority) CanCreate(all bool) bool {
+	return a.can(CREATE) && (!all || a.canAll())
 }
 
-func (a *Authority) CanUpdate() bool {
-	return a.can(UPDATE)
+func (a *Authority) CanRead(all bool) bool {
+	return a.can(READ) && (!all || a.canAll())
 }
 
-func (a *Authority) CanDelete() bool {
-	return a.can(DELETE)
+func (a *Authority) CanUpdate(all bool) bool {
+	return a.can(UPDATE) && (!all || a.canAll())
 }
 
-func (a *Authority) CanAllCreate() bool {
-	return a.CanCreate() && a.canAll()
-}
-
-func (a *Authority) CanAllRead() bool {
-	return a.can(READ) && a.canAll()
-}
-
-func (a *Authority) CanAllUpdate() bool {
-	return a.can(UPDATE) && a.canAll()
-}
-
-func (a *Authority) CanAllDelete() bool {
-	return a.can(DELETE) && a.canAll()
+func (a *Authority) CanDelete(all bool) bool {
+	return a.can(DELETE) && (!all || a.canAll())
 }
 
 func (a *Authority) can(v uint8) bool {

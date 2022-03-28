@@ -2,7 +2,10 @@ package model
 
 import (
 	"errors"
+	"log"
 	"time"
+
+	"github.com/jinzhu/gorm"
 )
 
 type Token struct {
@@ -32,6 +35,29 @@ func (t *Token) AddUserAuthority(all bool) error {
 		WithDeleteRight(all),
 	)
 	return err
+}
+
+func (t *Token) UserAuthority() *Authority {
+	for _, auth := range t.authorities() {
+		if auth.IsUserRight() {
+			return &auth
+		}
+	}
+	return &Authority{}
+}
+
+func (t *Token) authorities() []Authority {
+	if t.Authorities == nil {
+		authes, err := GetAuthorities(func(db *gorm.DB) *gorm.DB {
+			return db.Where(&Authority{TokenID: t.ID})
+		})
+		if err != nil {
+			log.Printf("[ERROR] Get Token's Authorities: %v\n", err)
+			authes = []Authority{}
+		}
+		t.Authorities = authes
+	}
+	return t.Authorities
 }
 
 func (t *Token) BindParams(params *TokenParams) {

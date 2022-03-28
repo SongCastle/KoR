@@ -23,6 +23,7 @@ var codeTable map[string]string = map[string]string{
 	"FailToGenerateAuthToken": "fail_to_generate_authorization_token",
 	"UnidentifiedUser"       : "unidentified_user",
 	"FailToDeleteAuthToken"  : "fail_to_delete_authorization_token",
+	"NotPermitted"           : "not_permitted",
 }
 
 func CodeJson(key string) gin.H {

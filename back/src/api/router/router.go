@@ -24,8 +24,6 @@ func Routes() *gin.Engine {
 	// Users API
 	v1.Use(middleware.ErrorHandleMiddleware())
 	{
-		v1.GET("/users", h1.ShowUsers)
-		v1.GET("/users/:id", h1.ShowUser)
 		v1.POST("/users", h1.CreateUser)
 		v1.PUT("/users/auth", h1.AuthUser)
 
@@ -33,6 +31,8 @@ func Routes() *gin.Engine {
 		auth := v1.Group("/")
 		auth.Use(middleware.AuthHandleMiddleware())
 		{
+			auth.GET("/users", h1.ShowUsers)
+			auth.GET("/users/:id", h1.ShowUser)
 			auth.PUT("/users/:id", h1.UpdateUser)
 			auth.DELETE("/users/:id", h1.DeleteUser)
 			// TODO: 認証トークンの是非を問わず 204 を返却した方が良いかも ...
