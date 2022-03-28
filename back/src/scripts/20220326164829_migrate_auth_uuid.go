@@ -76,7 +76,7 @@ func main() {
 
 		fmt.Printf(" - New Token / id: %d, uuid: %s\n", token.ID, token.UUID)
 		fmt.Printf("  - New Authority / id: %d, create: %t, read: %t, update: %t, delete: %t\n\n",
-			auth.ID, auth.CanCreate(), auth.CanRead(), auth.CanUpdate(), auth.CanDelete(),
+			auth.ID, auth.CanCreate(all), auth.CanRead(all), auth.CanUpdate(all), auth.CanDelete(all),
 		)
 	}
 	fmt.Printf("Finish Updating AuthUUID\n\n")
@@ -107,7 +107,7 @@ func main() {
 
 		fmt.Printf(" - Token / id: %d, uuid: %s\n", token.ID, token.UUID)
 		fmt.Printf("  - Authority / id: %d, create: %t, read: %t, update: %t, delete: %t\n\n",
-			auth.ID, auth.CanCreate(), auth.CanRead(), auth.CanUpdate(), auth.CanDelete(),
+			auth.ID, auth.CanCreate(all), auth.CanRead(all), auth.CanUpdate(all), auth.CanDelete(all),
 		)
 	}
 	fmt.Println("Finish Migration")
