@@ -4,27 +4,56 @@ import { MyComponent } from './sampleTransition';
 
 export const Top = () => (
   <>
-    <div className='w-full h-screen bg-gray-800'>
-      <div className='text-white text-4xl text-center pt-3 animate-pulse'>
-        Welcome to our coding community. Lets join us!
-      </div>
-      <div className='w-2/3 h-1/2 pt-8 mx-auto mt-3 flex flex-wrap justify-center'>
-        <div className='h-5 border border-blue-800 rounded-2xl text-white text-5xl bg-blue-600 px-4 py-2'>
-          <Link to='/signup' className='hover:text-gray-200'>
-            Get started
-          </Link>
+    <div className='h-auto bg-gray-800'>
+      <div className='container mx-auto pt-7 h-full flex'>
+        <div className='artcle-index pr-12'>
+          <div className='ruby-contents'>
+            <p className='text-white'>Ruby</p>
+            <div className='flex'>
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2'>
+                
+              </div>
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
+            </div>
+          </div>
+          <div className='php-contents'>
+            <p className='text-white'>PHP</p>
+            <div className='flex'>
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
+            </div>
+          </div>
+          <div className='php-contents'>
+            <p className='text-white'>Python</p>
+            <div className='flex'>
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
+            </div>
+          </div>
+          <div className='php-contents'>
+            <p className='text-white'>Go</p>
+            <div className='flex'>
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
+            </div>
+          </div>
         </div>
-        <div className='h-5 border border-gray-500 rounded-2xl text-white text-5xl bg-gray-400 px-4 py-2'>
-          <Link to='/' className='hover:text-gray-200'>
-            Document
-          </Link>
+        <div className='border-l-4 border-black w-full px-6'>
+          <div className='border border-gray-700 rounded bg-gray-100 h-96 p-4'>
+            <p>タグ(ペンの画像）</p>
+            <ul className='text-2xl pt-5'>
+              <li className='border border-gray-300 rounded-lg bg-white px-4 inline-block'># Ruby</li>
+              <li className='border border-gray-300 rounded-lg bg-white px-4 inline-block'># PHP</li>
+              <li className='border border-gray-300 rounded-lg bg-white px-4 inline-block'># Go</li>
+              <li className='border border-gray-300 rounded-lg bg-white px-4 inline-block'># Python</li>
+            </ul>
+          </div>
         </div>
       </div>
-    </div>
-    <div className='w-full h-screen bg-white'>
-      <div className='text-center text-7xl'>Usage</div>
-      <p>ここに説明を入れる。少し動きをつけたい。headless ui</p>
-      <MyComponent />
     </div>
   </>
 );

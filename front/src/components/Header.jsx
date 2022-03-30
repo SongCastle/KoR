@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 export const Header = () => (
-  <header className='bg-gray-800 text-gray-100 flex'>
+  <header className='bg-gray-900 text-gray-100 flex'>
     <div className='title text-4xl p-5 flex-grow'>
       <Link to='/'>KoR</Link>
     </div>
