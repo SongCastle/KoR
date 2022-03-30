@@ -39,15 +39,17 @@ func AuthHandleMiddleware() gin.HandlerFunc {
 			return
 		}
 		// JWT Token からユーザを検索
+		uParams := &model.UserParams{ID: rjt.UserID}
 		user, err := model.GetUser(
-			&model.UserGetQuery{ID: rjt.UserID},
-			[]string{"id", "login", "email"},
+			model.SelectColumns("id", "login", "email"),
+			model.WhereUser(uParams),
 		)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, ecode.CodeJson("InvalidAuthToken"))
 			return
 		}
-		token, err := model.GetToken(&model.TokenGetQuery{UserID: rjt.UserID, UUID: rjt.ID})
+		tParams := &model.TokenParams{UserID: rjt.UserID, UUID: &rjt.ID}
+		token, err := model.GetToken(model.WhereToken(tParams))
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, ecode.CodeJson("InvalidAuthToken"))
 			return

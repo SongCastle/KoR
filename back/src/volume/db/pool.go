@@ -86,5 +86,6 @@ func Connect(f func(db *gorm.DB) error) error {
 	if err != nil {
 		return err
 	}
+	// TODO: Rollback について
 	return db.Transaction(f)
 }

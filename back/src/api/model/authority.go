@@ -1,6 +1,11 @@
 package model
 
-import "time"
+import (
+	"fmt"
+	"time"
+
+	"github.com/jinzhu/gorm"
+)
 
 const (
 	// Rights
@@ -8,7 +13,6 @@ const (
 	READ   = CREATE << 1
 	UPDATE = READ   << 1
 	DELETE = UPDATE << 1
-	ALL    = CREATE << 7
 	// Types
 	UserType = "users"
 )
@@ -23,100 +27,141 @@ type Authority struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
-type AuthorityBuilder = func(*Authority)
+type AuthorityParams struct {
+	ID      uint64
+	TokenID uint64  `json:"token_id"`
+}
 
-func WithTokenID(tokenID uint64) AuthorityBuilder {
-	return func(a *Authority) {
-		a.TokenID = tokenID
+func NewAuthority(params *AuthorityParams) *Authority {
+	auth := &Authority{}
+	auth.BindParams(params)
+	return auth
+}
+
+func GetAuthority(queries ...queryFunc) (*Authority, error) {
+	var auth Authority
+	finisher := func(d *gorm.DB) *gorm.DB {
+		return d.First(&auth)
+	}
+	err := executeQueries(append(queries, finisher)...)
+	if err == nil {
+		return &auth, nil
+	}
+	return nil, err
+}
+
+func GetAuthorities(queries ...queryFunc) ([]Authority, error) {
+	var authes []Authority
+	finisher := func(d *gorm.DB) *gorm.DB {
+		return d.Find(&authes)
+	}
+	err := executeQueries(append(queries, finisher)...)
+	if err == nil {
+		return authes, nil
+	}
+	return nil, err
+}
+
+func WhereAuthority(params *AuthorityParams) queryFunc {
+	return func(db *gorm.DB) *gorm.DB {
+		return db.Where(NewAuthority(params))
 	}
 }
 
-func WithUsersRight() AuthorityBuilder {
-	return func(a *Authority) {
-		a.Type = UserType
-	}
+func (a *Authority) Create() error {
+	a.ID = 0
+	return executeQueries(func(d *gorm.DB) *gorm.DB {
+		return d.Create(a)
+	})
 }
 
-func WithCreateRight(all bool) AuthorityBuilder {
-	return func(a *Authority) {
-		if !a.CanCreate(all) {
-			if all {
-				a.addAllCRUDRight(CREATE)
-				return
-			}
-			a.addCRUDRight(CREATE)
-		}
+func (a *Authority) Update() error {
+	if !a.IsPersisted() {
+		return notPersisted
 	}
+	return executeQueries(func(d *gorm.DB) *gorm.DB {
+		return d.Save(a)
+	})
 }
 
-func WithReadRight(all bool) AuthorityBuilder {
-	return func(a *Authority) {
-		if !a.CanRead(all) {
-			if all {
-				a.addAllCRUDRight(READ)
-				return
-			}
-			a.addCRUDRight(READ)
-		}
+func (a *Authority) Delete() error {
+	if !a.IsPersisted() {
+		return notPersisted
 	}
+	return executeQueries(func(d *gorm.DB) *gorm.DB {
+		return d.Delete(a)
+	})
 }
 
-func WithUpdateRight(all bool) AuthorityBuilder {
-	return func(a *Authority) {
-		if !a.CanUpdate(all) {
-			if all {
-				a.addAllCRUDRight(UPDATE)
-				return
-			}
-			a.addCRUDRight(UPDATE)
-		}
-	}
+func (a *Authority) SetTokenID(tokenID uint64) *Authority {
+	a.TokenID = tokenID
+	return a
 }
 
-func WithDeleteRight(all bool) AuthorityBuilder {
-	return func(a *Authority) {
-		if !a.CanDelete(all) {
-			if all {
-				a.addAllCRUDRight(DELETE)
-				return
-			}
-			a.addCRUDRight(DELETE)
-		}
-	}
+func (a *Authority) AsUsersRight() *Authority {
+	a.Type = UserType
+	return a
 }
 
-func (a *Authority) Build(adds ...AuthorityBuilder) {
-	for _, add := range adds {
-		add(a)
-	}
+func (a *Authority) AddCreateRight(all bool) *Authority {
+	return a.addCRUDRight(CREATE, all)
+}
+
+func (a *Authority) AddReadRight(all bool) *Authority {
+	return a.addCRUDRight(READ, all)
+}
+
+func (a *Authority) AddUpdateRight(all bool) *Authority {
+	return a.addCRUDRight(UPDATE, all)
+}
+
+func (a *Authority) AddDeleteRight(all bool) *Authority {
+	return a.addCRUDRight(DELETE, all)
+}
+
+func (a *Authority) CanCreate(all bool) bool {
+	return a.canAction(CREATE, all)
+}
+
+func (a *Authority) CanRead(all bool) bool {
+	return a.canAction(READ, all)
+}
+
+func (a *Authority) CanUpdate(all bool) bool {
+	return a.canAction(UPDATE, all)
+}
+
+func (a *Authority) CanDelete(all bool) bool {
+	return a.canAction(DELETE, all)
+}
+
+func (a *Authority) IsPersisted() bool {
+	return a.ID != 0
 }
 
 func (a *Authority) IsUserRight() bool {
 	return a.Type == UserType
 }
 
-func (a *Authority) CanCreate(all bool) bool {
-	return a.can(CREATE) && (!all || a.canAll())
+func (a *Authority) BindParams(params *AuthorityParams) {
+	bindParamsToObject(params, a)
 }
 
-func (a *Authority) CanRead(all bool) bool {
-	return a.can(READ) && (!all || a.canAll())
-}
-
-func (a *Authority) CanUpdate(all bool) bool {
-	return a.can(UPDATE) && (!all || a.canAll())
-}
-
-func (a *Authority) CanDelete(all bool) bool {
-	return a.can(DELETE) && (!all || a.canAll())
-}
-
-func (a *Authority) can(v uint8) bool {
-	return a.Right != nil && a.Right[7] & v == v
-}
-
-func (a *Authority) canAll() bool {
-	return a.Right != nil && a.Right[0] & ALL == ALL
+// Hooks
+func (a *Authority) BeforeCreate(tx *gorm.DB) error {
+	if a.TokenID == 0 {
+		return fmt.Errorf("Empty TokenID")
+	}
+	if a.Type == "" {
+		return fmt.Errorf("Empty Type")
+	}
+	if a.Right == nil {
+		return fmt.Errorf("Empty Right")
+	}
+	if len(a.Right) != 8 {
+		return fmt.Errorf("Invalid Right (len: %d)", len(a.Right))
+	}
+	return nil
 }
 
 func (a *Authority) rights() []uint8 {
@@ -126,12 +171,29 @@ func (a *Authority) rights() []uint8 {
 	return a.Right
 }
 
-func (a *Authority) addCRUDRight(v uint8) {
-	r := a.rights()
-	r[7] += v
+func (a *Authority) addCRUDRight(v uint8, all bool) *Authority {
+	if !a.canAction(v, all) {
+		r := a.rights()
+		if all {
+			r[0] += v
+		} else {
+			r[7] += v
+		}
+	}
+	return a
 }
 
-func (a *Authority) addAllCRUDRight(v uint8) {
-	r := a.rights()
-	r[0] += v
+func (a *Authority) can(v uint8) bool {
+	return a.Right != nil && a.Right[7] & v == v
+}
+
+func (a *Authority) canAll(v uint8) bool {
+	return a.Right != nil && a.Right[0] & v == v
+}
+
+func (a *Authority) canAction(v uint8, all bool) bool {
+	if all {
+		return a.canAll(v)
+	}
+	return a.can(v)
 }

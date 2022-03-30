@@ -2,7 +2,7 @@ package ecode
 
 import "github.com/gin-gonic/gin"
 
-var codeTable map[string]string = map[string]string{
+var codeTable = map[string]string{
 	"FailToGetUsers"         : "fail_to_get_users",
 	"BlankUserID"            : "blank_user_id",
 	"InvalidUserID"          : "invalid_user_id_format",

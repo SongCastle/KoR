@@ -33,6 +33,7 @@ func main() {
 
 	// DB 接続
 	client := db.MySQLClient{}
+	client.Init()
 	d, err := client.Connect()
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)

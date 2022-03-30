@@ -52,24 +52,25 @@ func main() {
 		}
 		fmt.Printf("- User / id: %v, uuid: %v\n", user.ID, user.AuthUUID)
 
-		tokenParams := &model.TokenParams{
+		tParams := &model.TokenParams{
 			UserID: user.ID, UUID: &user.AuthUUID,
 		}
-		token, err := model.CreateToken(tokenParams)
-		if err != nil {
+		token := model.NewToken(tParams)
+		if err := token.Create(); err != nil {
 			fmt.Printf("Failed to Token: %v\n", err)
 			continue
 		}
 
-		auth, err := model.CreateAuthority(
-			model.WithTokenID(token.ID),
-			model.WithUsersRight(),
-			model.WithCreateRight(all),
-			model.WithReadRight(all),
-			model.WithUpdateRight(all),
-			model.WithDeleteRight(all),
-		)
-		if err != nil {
+		aParams := &model.AuthorityParams{TokenID: token.ID}
+		auth := model.NewAuthority(aParams)
+		auth.
+			AsUsersRight().
+			AddCreateRight(all).
+			AddReadRight(all).
+			AddUpdateRight(all).
+			AddDeleteRight(all)
+
+		if err := auth.Create(); err != nil {
 			fmt.Printf("Failed to Create Authority: %v\n", err)
 			continue
 		}
@@ -90,16 +91,15 @@ func main() {
 		}
 		fmt.Printf("- User / id: %v, uuid: %v\n", user.ID, user.AuthUUID)
 
-		tokenQuery := model.TokenGetQuery{
-			UserID: user.ID, UUID: user.AuthUUID,
-		}
-		token, err := model.GetToken(&tokenQuery)
+		tParams := &model.TokenParams{UserID: user.ID, UUID: &user.AuthUUID}
+		token, err := model.GetToken(model.WhereToken(tParams))
 		if err != nil {
 			fmt.Printf("Failed to Get Token: %v\n", err)
 			continue
 		}
 
-		auth, err := model.GetAuthority(token.ID)
+		aParams := &model.AuthorityParams{TokenID: token.ID}
+		auth, err := model.GetAuthority(model.WhereAuthority(aParams))
 		if err != nil {
 			fmt.Printf("Failed to Get Authority: %v\n", err)
 			continue
