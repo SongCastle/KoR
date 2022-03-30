@@ -1,6 +1,41 @@
 package model
 
-import "reflect"
+import (
+	"errors"
+	"reflect"
+
+	"github.com/SongCastle/KoR/volume/db"
+	"github.com/jinzhu/gorm"
+)
+
+var (
+	invalidQueryExecution error = errors.New("NotPersisted")
+	notPersisted error = errors.New("NotPersisted")
+)
+
+type queryFunc = func(*gorm.DB) *gorm.DB
+
+// TODO: 同一のトランザクション内でコネクションを共有したい
+func executeQueries(queries ...queryFunc) error {
+	return db.Connect(func(d *gorm.DB) error {
+		switch len := len(queries); len {
+			case 0:
+				return invalidQueryExecution
+			default:
+				for _, query := range queries[:len - 1] {
+					d = query(d)
+				}
+				return queries[len - 1](d).Error
+		}
+	})
+}
+
+// TODO: カラムの存在判定について
+func SelectColumns(cols ...string) queryFunc {
+	return func(db *gorm.DB) *gorm.DB {
+		return db.Select(cols)
+	}
+}
 
 func bindParamsToObject(params interface{}, obj interface{}) {
 	vp := reflect.ValueOf(params)
