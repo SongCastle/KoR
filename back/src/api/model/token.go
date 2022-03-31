@@ -96,14 +96,15 @@ func (t *Token) AddUserAuthority(all bool) error {
 	if !t.IsPersisted() {
 		return notPersisted
 	}
-	auth := NewAuthority(&AuthorityParams{TokenID: t.ID})
+	auth := t.UserAuthority()
 	return auth.
+		SetTokenID(t.ID).
 		AsUsersRight().
 		AddCreateRight(all).
 		AddReadRight(all).
 		AddUpdateRight(all).
 		AddDeleteRight(all).
-		Create()
+		CreateOrUpdate()
 }
 
 func (t *Token) UserAuthority() *Authority {

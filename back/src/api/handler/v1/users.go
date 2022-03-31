@@ -1,13 +1,11 @@
 package v1
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/SongCastle/KoR/api/middleware"
 	"github.com/SongCastle/KoR/api/model"
-	"github.com/SongCastle/KoR/internal/ecode"
 	"github.com/SongCastle/KoR/internal/jwt"
 	"github.com/gin-gonic/gin"
 )
@@ -21,7 +19,7 @@ func ShowUsers(c *gin.Context) {
 		abortWithJSON(c, http.StatusBadRequest, "UnidentifiedUser")
 		return
 	}
-	if !cUser.CurrentToken.UserAuthority().CanRead(true) {
+	if !cUser.CurrentToken().UserAuthority().CanRead(true) {
 		abortWithJSON(c, http.StatusUnauthorized, "NotPermitted")
 		return
 	}
@@ -53,7 +51,7 @@ func ShowUser(c *gin.Context) {
 		abortWithJSON(c, http.StatusBadRequest, "UnidentifiedUser")
 		return
 	}
-	if !cUser.CurrentToken.UserAuthority().CanRead(id != cUser.ID) {
+	if !cUser.CurrentToken().UserAuthority().CanRead(id != cUser.ID) {
 		abortWithJSON(c, http.StatusUnauthorized, "NotPermitted")
 		return
 	}
@@ -82,12 +80,12 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	if err := user.CreateToken(); err != nil {
+	if err := user.CreateToken(false); err != nil {
 		abortWithError(c, http.StatusBadRequest, "FailToGenerateAuthToken", err)
 		return
 	}
 	// JWT Token 生成
-	jt, err := jwt.Generate(user.CurrentToken.UUID, user.Login, user.ID)
+	jt, err := jwt.Generate(user.CurrentToken().UUID, user.Login, user.ID)
 	if err != nil {
 		abortWithError(c, http.StatusBadRequest, "FailToGenerateAuthToken", err)
 		return
@@ -115,7 +113,7 @@ func UpdateUser(c *gin.Context) {
 		abortWithJSON(c, http.StatusBadRequest, "UnidentifiedUser")
 		return
 	}
-	if !cUser.CurrentToken.UserAuthority().CanUpdate(id != cUser.ID) {
+	if !cUser.CurrentToken().UserAuthority().CanUpdate(id != cUser.ID) {
 		abortWithJSON(c, http.StatusUnauthorized, "NotPermitted")
 		return
 	}
@@ -168,7 +166,7 @@ func DeleteUser(c *gin.Context) {
 		abortWithJSON(c, http.StatusBadRequest, "UnidentifiedUser")
 		return
 	}
-	if !cUser.CurrentToken.UserAuthority().CanDelete(id != cUser.ID) {
+	if !cUser.CurrentToken().UserAuthority().CanDelete(id != cUser.ID) {
 		abortWithJSON(c, http.StatusUnauthorized, "NotPermitted")
 		return
 	}
@@ -179,98 +177,4 @@ func DeleteUser(c *gin.Context) {
 		return
 	}
 	c.Status(http.StatusNoContent)
-}
-
-// TODO: 他の hundler も同様に型定義した方が良いかも ...
-type AuthParams struct {
-	Login    string `json:"login,omitempty"`
-	Password string `json:"password,omitempty"`
-}
-
-// TODO: 別ファイルにしてもよいかも ...
-func AuthUser(c *gin.Context) {
-	var params AuthParams
-	if err := c.ShouldBindJSON(&params); err != nil {
-		abortWithError(c, http.StatusBadRequest, "InvalidAuthUserParams", err)
-		return
-	}
-
-	if params.Login == "" {
-		abortWithJSON(c, http.StatusBadRequest, "BlankLogin")
-		return
-	}
-	if params.Password == "" {
-		abortWithJSON(c, http.StatusBadRequest, "BlankPassword")
-		return
-	}
-
-	uParams := &model.UserParams{Login: &params.Login}
-	user, err := model.GetUser(
-		model.SelectColumns("id", "encrypted_password", "login", "password_salt"),
-		model.WhereUser(uParams),
-	)
-	if err != nil {
-		abortWithError(c, http.StatusBadRequest, "FailToAuth", err)
-		return
-	}
-	// Password の検証
-	if !user.TestPassword(params.Password) {
-		abortWithJSON(c, http.StatusBadRequest, "FailToAuth")
-		return
-	}
-
-	if err := user.CreateToken(); err != nil {
-		abortWithError(c, http.StatusBadRequest, "FailToGenerateAuthToken", err)
-		return
-	}
-	// JWT Token 生成
-	jt, err := jwt.Generate(user.CurrentToken.UUID, user.Login, user.ID)
-	if err != nil {
-		abortWithError(c, http.StatusBadRequest, "FailToGenerateAuthToken", err)
-		return
-	}
-	c.String(http.StatusOK, jt.Token)
-}
-
-func UnauthUser(c *gin.Context) {
-	_user, ok := c.Get("CurrentUser")
-	if !ok {
-		abortWithJSON(c, http.StatusBadRequest, "UnidentifiedUser")
-		return
-	}
-	user, ok := _user.(*model.User)
-	if !ok {
-		abortWithJSON(c, http.StatusBadRequest, "UnidentifiedUser")
-		return
-	}
-	params := &model.TokenParams{ID: user.CurrentToken.ID}
-	if err := model.NewToken(params).Delete(); err != nil {
-		abortWithError(c, http.StatusBadRequest, "FailToDeleteAuthToken", err)
-		return
-	}
-	c.Status(http.StatusNoContent)
-}
-
-func currentUser(c *gin.Context) (*model.User, error) {
-	_user, ok := c.Get("CurrentUser")
-	if !ok {
-		return nil, fmt.Errorf("UnidentifiedUser")
-	}
-	user, ok := _user.(*model.User)
-	if !ok {
-		return nil, fmt.Errorf("UnidentifiedUser")
-	}
-	return user, nil
-}
-
-func isBlank(str *string) bool {
-	return str != nil && *str == ""
-}
-
-func abortWithError(c *gin.Context, status int, code string, err error) {
-	c.AbortWithError(status, err).SetMeta(ecode.CodeJson(code))
-}
-
-func abortWithJSON(c *gin.Context, status int, code string) {
-	c.AbortWithStatusJSON(status, ecode.CodeJson(code))
 }

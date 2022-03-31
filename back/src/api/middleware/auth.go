@@ -3,7 +3,6 @@ package middleware
 import (
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/SongCastle/KoR/api/model"
 	"github.com/SongCastle/KoR/internal/ecode"
@@ -11,28 +10,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	AuthorizationHeader = "Authorization" // Request Header
-	TokenHeader = "X-Authorization-Token" // Response Header
-)
+const TokenHeader = "X-Authorization-Token" // for response header
 
 func AuthHandleMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Authorization ヘッダを確認
-		authHeader := c.Request.Header.Get(AuthorizationHeader)
-		if authHeader == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, ecode.CodeJson("BlankAuthHeader"))
-			return
-		}
-		auth := strings.Split(authHeader, "Bearer ")
-		authLen := len(auth)
-		if authLen < 2 {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, ecode.CodeJson("InvalidAuthHeader"))
+		jToken, err := extractCredential(c.Request.Header.Get(AuthorizationHeader))
+		if err != nil {
+			// TODO: status code を内包する error を作成してもよいかも
+			c.AbortWithStatusJSON(http.StatusUnauthorized, ecode.CodeJson(err.Error()))
 			return
 		}
 		// Authorization Token を取得・検証
 		// TODO: 期限切れの JWT Token について
-		jToken := strings.TrimSpace(auth[authLen - 1])
 		rjt, err := jwt.Verify(jToken)
 		if err != nil {
 			c.AbortWithError(http.StatusBadRequest, err).SetMeta(ecode.CodeJson("FailToValidateAuthToken"))
@@ -54,9 +44,10 @@ func AuthHandleMiddleware() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusBadRequest, ecode.CodeJson("InvalidAuthToken"))
 			return
 		}
-		user.CurrentToken = token
+		user.SetCurrentToken(token)
 		c.Set("CurrentUser", user)
 		log.Printf("[DEBUG] User#%d (%s)", user.ID, user.Login)
+		// TODO: Token 削除後のヘッダ
 		c.Header(TokenHeader, jToken)
 
 		c.Next()

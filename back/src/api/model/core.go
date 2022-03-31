@@ -37,6 +37,12 @@ func SelectColumns(cols ...string) queryFunc {
 	}
 }
 
+func LimitQuery(n int) queryFunc {
+	return func(db *gorm.DB) *gorm.DB {
+		return db.Limit(n)
+	}
+}
+
 func bindParamsToObject(params interface{}, obj interface{}) {
 	vp := reflect.ValueOf(params)
 	ivp := reflect.Indirect(vp)

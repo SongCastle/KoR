@@ -1,18 +1,17 @@
 package encryptor
 
 import (
-	"os"
-
 	"github.com/SongCastle/KoR/internal/encryptor/argon2id"
 	"github.com/SongCastle/KoR/internal/encryptor/bcrypt"
+	"github.com/SongCastle/KoR/internal/env"
 )
 
 const UseArgon2id = true
 
 var Pepper string = "pepper1234"
 
-func Init() {
-	if pepper := os.Getenv("PASSWORD_PEPPER"); pepper != "" {
+func init() {
+	if pepper := env.Get("PASSWORD_PEPPER"); pepper != "" {
 		Pepper = pepper
 	}
 }
