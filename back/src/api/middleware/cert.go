@@ -19,6 +19,7 @@ func CertMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		cert, err := extractCredential(c.Request.Header.Get(AuthorizationHeader))
 		if err != nil {
+			log.Warnf("Invalid cert access: %s", c.ClientIP())
 			c.AbortWithStatusJSON(http.StatusUnauthorized, ecode.CodeJson(err.Error()))
 			return
 		}
