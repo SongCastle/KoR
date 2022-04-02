@@ -11,6 +11,7 @@ var (
 		"PASSWORD_PEPPER", // パスワードのペッパー
 		"JWT_SECRET",      // JWT の秘密鍵
 		"KOR_CERT",        // アプリケーションの cert
+		"KOR_LOG_LEVEL",   // アプリケーションのログレベル
 		"MYSQL_HOST",      // MySQL のホスト
 		"MYSQL_PORT",      // MySQL のポート
 		"MYSQL_DATABASE",  // MySQL のデータベース名
@@ -39,7 +40,7 @@ func init() {
 func Get(key string) string {
 	v := _env.Store[key]
 	if v == "" {
-		log.Printf("[WARNING] Access to unknown env: %s\n", key)
+		log.Printf("[ENV] Access to unknown env: %s", key)
 	}
 	return v
 }

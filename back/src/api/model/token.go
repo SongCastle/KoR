@@ -2,9 +2,9 @@ package model
 
 import (
 	"errors"
-	"log"
 	"time"
 
+	"github.com/SongCastle/KoR/internal/log"
 	"github.com/SongCastle/KoR/internal/random"
 	"github.com/jinzhu/gorm"
 )
@@ -153,7 +153,7 @@ func (t *Token) authorities() []Authority {
 			WhereAuthority(&AuthorityParams{TokenID: t.ID}),
 		)
 		if err != nil {
-			log.Printf("[ERROR] Get Token's Authorities: %v\n", err)
+			log.Errorf("Get Token's Authorities: %v", err)
 			authes = []Authority{}
 		}
 		t.Authorities = authes

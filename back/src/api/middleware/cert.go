@@ -1,11 +1,11 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/SongCastle/KoR/internal/ecode"
 	"github.com/SongCastle/KoR/internal/env"
+	"github.com/SongCastle/KoR/internal/log"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,7 +23,7 @@ func CertMiddleware() gin.HandlerFunc {
 			return
 		}
 		if cert != Certification {
-			log.Printf("[WARNING] Invalid cert access: %s\n", c.ClientIP())
+			log.Warnf("Invalid cert access: %s", c.ClientIP())
 			c.AbortWithStatusJSON(http.StatusUnauthorized, ecode.CodeJson("InvalidCertification"))
 			return
 		}

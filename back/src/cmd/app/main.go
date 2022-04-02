@@ -1,9 +1,8 @@
 package main
 
 import (
-	"log"
-
 	"github.com/SongCastle/KoR/api/router"
+	"github.com/SongCastle/KoR/internal/log"
 	"github.com/SongCastle/KoR/volume/db"
 )
 
@@ -16,7 +15,7 @@ func setUp() error {
 
 func main() {
 	if err := setUp(); err != nil {
-		log.Printf("Failed to launch Server\n")
+		log.Fatalf("Failed to launch Server")
 		return
 	}
 	router.Routes().Run(":8080")

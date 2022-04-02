@@ -1,12 +1,12 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/SongCastle/KoR/api/model"
 	"github.com/SongCastle/KoR/internal/ecode"
 	"github.com/SongCastle/KoR/internal/jwt"
+	"github.com/SongCastle/KoR/internal/log"
 	"github.com/gin-gonic/gin"
 )
 
@@ -46,7 +46,7 @@ func AuthHandleMiddleware() gin.HandlerFunc {
 		}
 		user.SetCurrentToken(token)
 		c.Set("CurrentUser", user)
-		log.Printf("[DEBUG] User#%d (%s)", user.ID, user.Login)
+		log.Debugf("User#%d (%s)", user.ID, user.Login)
 		// TODO: Token 削除後のヘッダ
 		c.Header(TokenHeader, jToken)
 

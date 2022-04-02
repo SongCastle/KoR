@@ -2,10 +2,10 @@ package model
 
 import (
 	"errors"
-	"log"
 	"time"
 
 	"github.com/SongCastle/KoR/internal/encryptor"
+	"github.com/SongCastle/KoR/internal/log"
 	"github.com/SongCastle/KoR/internal/random"
 	"github.com/jinzhu/gorm"
 )
@@ -180,12 +180,12 @@ func (u *User) CurrentToken() *Token {
 		if token, err := GetToken(WhereToken(&TokenParams{UserID: u.ID})); err == nil {
 			u.SetCurrentToken(token)
 		} else {
-			log.Printf("[DEBUG] Not found Token: %v\n", err)
+			log.Debugf("Not found Token: %v", err)
 			token = NewToken(&TokenParams{UserID: u.ID})
 			if err = token.Create(); err == nil {
 				u.SetCurrentToken(token)
 			} else {
-				log.Printf("[ERROR] Failed to create token: User#%d\n", u.ID)
+				log.Errorf("Failed to create token: User#%d", u.ID)
 				u.SetCurrentToken(&Token{})
 			}
 		}
