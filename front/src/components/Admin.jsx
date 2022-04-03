@@ -6,13 +6,13 @@ export const Admin = () => {
   const { users, isLoading, isError } = useUsers();
   if (isLoading) return <p>Loading ...</p>;
   if (isError) return <p>Error</p>;
-  
+
   const handleDouble = (event) => {
     // console.log(event.currentTarget.querySelector('#id').dataset.param)
     if (confirm('削除しますか？')) {
       postDelete();
     }
-  }
+  };
 
   return (
     <div id='admin-contents' className='flex flex-col pt-6 bg-gray-800 h-screen items-start'>

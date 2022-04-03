@@ -2,16 +2,15 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { MyComponent } from './sampleTransition';
 import { ReactSlick } from './ReactSlick';
-import "../styles/top.css";
+import '../styles/top.css';
 
 export const Top = () => (
   <>
     <div className='h-auto bg-gray-800'>
       <div className='container mx-auto py-7 h-full flex'>
         <div className='artcle-index pr-12'>
-
           <div className='java-contents mx-auto'>
-          <p className='text-white'>Java</p>
+            <p className='text-white'>Java</p>
             <ReactSlick />
           </div>
 
@@ -53,10 +52,16 @@ export const Top = () => (
           <div className='border border-gray-700 rounded bg-gray-100 h-96 p-4'>
             <p>タグ(ペンの画像）</p>
             <ul className='text-2xl pt-5'>
-              <li className='border border-gray-300 rounded-lg bg-white px-4 inline-block'># Ruby</li>
-              <li className='border border-gray-300 rounded-lg bg-white px-4 inline-block'># PHP</li>
+              <li className='border border-gray-300 rounded-lg bg-white px-4 inline-block'>
+                # Ruby
+              </li>
+              <li className='border border-gray-300 rounded-lg bg-white px-4 inline-block'>
+                # PHP
+              </li>
               <li className='border border-gray-300 rounded-lg bg-white px-4 inline-block'># Go</li>
-              <li className='border border-gray-300 rounded-lg bg-white px-4 inline-block'># Python</li>
+              <li className='border border-gray-300 rounded-lg bg-white px-4 inline-block'>
+                # Python
+              </li>
             </ul>
           </div>
         </div>
