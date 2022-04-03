@@ -2,7 +2,7 @@ package ecode
 
 import "github.com/gin-gonic/gin"
 
-var codeTable map[string]string = map[string]string{
+var codeTable = map[string]string{
 	"FailToGetUsers"         : "fail_to_get_users",
 	"BlankUserID"            : "blank_user_id",
 	"InvalidUserID"          : "invalid_user_id_format",
@@ -21,9 +21,9 @@ var codeTable map[string]string = map[string]string{
 	"BlankPassword"          : "blank_password",
 	"FailToAuth"             : "invalid_login_or_password",
 	"FailToGenerateAuthToken": "fail_to_generate_authorization_token",
-	"FailToGiveAuthToken"    : "fail_to_give_authorization_token",
 	"UnidentifiedUser"       : "unidentified_user",
 	"FailToDeleteAuthToken"  : "fail_to_delete_authorization_token",
+	"NotPermitted"           : "not_permitted",
 }
 
 func CodeJson(key string) gin.H {
