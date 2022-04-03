@@ -1,6 +1,5 @@
-import React from 'react';
-import { useState } from 'react';
-import { postUser } from '../api/userPost';
+import React, { useState } from 'react';
+// import { postUser } from '../api/userPost';
 
 export const SingupForm = () => {
   const [username, setUserame] = useState('');
@@ -26,9 +25,9 @@ export const SingupForm = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     const params = {
-      username: username,
-      email: email,
-      password: password,
+      username,
+      email,
+      password,
     };
     alert(Object.values(params));
     // postUser(params);

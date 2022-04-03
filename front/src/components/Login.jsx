@@ -1,5 +1,4 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
@@ -21,8 +20,8 @@ export const Login = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     const params = {
-      email: email,
-      password: password,
+      email,
+      password,
     };
     alert(Object.values(params));
   };

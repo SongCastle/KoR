@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { MyComponent } from './sampleTransition';
+// import { Link } from 'react-router-dom';
+// import { MyComponent } from './sampleTransition';
 import { ReactSlick } from './ReactSlick';
 import '../styles/top.css';
 
@@ -17,34 +17,34 @@ export const Top = () => (
           <div className='ruby-contents'>
             <p className='text-white'>Ruby</p>
             <div className='flex'>
-              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
-              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
-              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2' />
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2' />
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2' />
             </div>
           </div>
 
           <div className='php-contents'>
             <p className='text-white'>PHP</p>
             <div className='flex'>
-              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
-              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
-              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2' />
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2' />
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2' />
             </div>
           </div>
           <div className='php-contents'>
             <p className='text-white'>Python</p>
             <div className='flex'>
-              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
-              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
-              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2' />
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2' />
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2' />
             </div>
           </div>
           <div className='php-contents'>
             <p className='text-white'>Go</p>
             <div className='flex'>
-              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
-              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
-              <div className='w-72 h-64 border rounded-lg bg-white mr-2'></div>
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2' />
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2' />
+              <div className='w-72 h-64 border rounded-lg bg-white mr-2' />
             </div>
           </div>
         </div>

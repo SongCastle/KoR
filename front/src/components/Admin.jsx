@@ -7,8 +7,10 @@ export const Admin = () => {
   if (isLoading) return <p>Loading ...</p>;
   if (isError) return <p>Error</p>;
 
+  // eslint-disable-next-line no-unused-vars
   const handleDouble = (event) => {
     // console.log(event.currentTarget.querySelector('#id').dataset.param)
+    // eslint-disable-next-line no-restricted-globals
     if (confirm('削除しますか？')) {
       postDelete();
     }
