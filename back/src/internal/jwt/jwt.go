@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/SongCastle/KoR/internal/random"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -15,7 +14,6 @@ const (
 	Issuer    = "KoR"
 	SignAlg   = "HS256"
 	Subject   = "authorization"
-	UUIDLen   = 32
 	ValidTerm = 30 * 24 * time.Hour
 )
 
@@ -46,9 +44,6 @@ func Init() {
 
 func Generate(uuid string, audience string, userID uint64) (*JWTToken, error) {
 	t, now := jwt.New(jwt.GetSigningMethod(SignAlg)), time.Now()
-	if uuid == "" {
-		uuid = random.Generate(UUIDLen)
-	}
 	t.Claims = &CustomClaims{
 		RegisteredClaims: &jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(now.Add(ValidTerm)),

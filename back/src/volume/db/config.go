@@ -1,12 +1,16 @@
 package db
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 )
 
 var myConf *MySQLConf
+
+const PasswordMaxLen = 1024
 
 // Only MySQL
 func SetUp() error {
@@ -44,8 +48,8 @@ func (c *MySQLConf) Init() error {
 	if c.userName = os.Getenv("MYSQL_USERNAME"); c.userName == "" {
 		return errors.New("Blank MYSQL_USERNAME")
 	}
-	if c.password = os.Getenv("MYSQL_PASSWORD"); c.password == "" {
-		return errors.New("Blank MYSQL_PASSWORD")
+	if err := c.setPassword(); err != nil {
+		return err
 	}
 	c.driver = "mysql"
 	return nil
@@ -60,4 +64,38 @@ func (c *MySQLConf) URL() string {
 		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		c.userName, c.password, c.host, c.port, c.dbName,
 	)
+}
+
+func (c *MySQLConf) setPassword() error {
+	passwordPath := os.Getenv("MYSQL_ROOT_PASSWORD_FILE")
+	if passwordPath == "" {
+		return errors.New("Blank MYSQL_ROOT_PASSWORD_FILE")
+	}
+
+	f, err := os.Open(passwordPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	buf := make([]byte, PasswordMaxLen)
+	n, err := f.Read(buf)
+	if err != nil {
+		return err
+	}
+	pw := bytes.SplitN(buf, []byte("\n"), 2)[0]
+
+	n, err = f.Read(buf)
+	if err != nil && err != io.EOF {
+		return err
+	}
+	if n > 0 {
+		return errors.New("Too Long DB Password")
+	}
+
+	c.password = string(pw)
+	if c.password == "" {
+		return errors.New("Empty DB Password")
+	}
+	return nil
 }

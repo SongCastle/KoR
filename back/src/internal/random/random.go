@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-var Encoder *base64.Encoding = base64.RawStdEncoding
+var Encoder = base64.RawStdEncoding
 
 func Generate(len int) string {
 	if r, err := generateStrongly(len); err == nil {
