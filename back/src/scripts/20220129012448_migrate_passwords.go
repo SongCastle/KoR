@@ -11,7 +11,6 @@ import (
 	"os"
 
 	"github.com/SongCastle/KoR/api/model"
-	"github.com/SongCastle/KoR/internal/encryptor"
 	"github.com/SongCastle/KoR/volume/db"
 )
 
@@ -22,8 +21,6 @@ func main() {
 		fmt.Println("Failed to run.")
 		return
 	}
-	// Encryptor 初期化
-	encryptor.Init()
 
 	// デフォルトパスワード設定
 	defaultPassword := "password1234"
@@ -60,18 +57,20 @@ func main() {
 		if user.Password == "" {
 			user.Password = defaultPassword
 		}
+		beforePassword := user.Password
+
 		if err := user.EncryptPassword(); err != nil {
 			fmt.Printf("Failed to encrypt Password (User#%d)\n\n", user.ID)
 			continue
 		}
 
-		if err := d.Model(user).Update(user).Error; err != nil {
+		if err := d.Model(user).Omit("Password").Update(user).Error; err != nil {
 			fmt.Printf("Failed to Update (User#%d)\n", user.ID)
 			fmt.Printf("Error: %v\n\n", err)
 		} else {
 			fmt.Printf("Success to Update (User#%d)\n", user.ID)
 			fmt.Printf("Encrypted Password: %s\n", user.EncryptedPassword)
-			fmt.Printf("Password Validity: %t\n\n", user.TestPassword(user.Password))
+			fmt.Printf("Password Validity: %t\n\n", user.TestPassword(beforePassword))
 		}
 	}
 }

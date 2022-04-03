@@ -2,10 +2,10 @@ package db
 
 import (
 	"errors"
-	"log"
 	"sync"
 	"time"
 
+	"github.com/SongCastle/KoR/internal/log"
 	"github.com/jinzhu/gorm"
 )
 
@@ -33,7 +33,7 @@ func invoke() {
 				for i, c := range pool {
 					if !(c == nil || c.Active()) {
 						mu.Lock()
-						log.Printf("Reset Connection %d (err: %v)\n", i, c.Fresh())
+						log.Infof("Reset Connection %d (err: %v)", i, c.Fresh())
 						pool[i] = nil
 						mu.Unlock()
 					}

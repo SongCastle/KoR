@@ -24,19 +24,28 @@ func Routes() *gin.Engine {
 	// Users API
 	v1.Use(middleware.ErrorHandleMiddleware())
 	{
-		v1.POST("/users", h1.CreateUser)
-		v1.PUT("/users/auth", h1.AuthUser)
+		usersAPI := v1.Group("/users")
+
+		usersAPI.POST("", h1.CreateUser)
+		usersAPI.POST("/token", h1.CreateToken)
 
 		// Require Authorization
-		auth := v1.Group("/")
-		auth.Use(middleware.AuthHandleMiddleware())
+		authUsersAPI := usersAPI.Group("")
+		authUsersAPI.Use(middleware.AuthHandleMiddleware())
 		{
-			auth.GET("/users", h1.ShowUsers)
-			auth.GET("/users/:id", h1.ShowUser)
-			auth.PUT("/users/:id", h1.UpdateUser)
-			auth.DELETE("/users/:id", h1.DeleteUser)
+			authUsersAPI.GET("", h1.ShowUsers)
+			authUsersAPI.GET("/:id", h1.ShowUser)
+			authUsersAPI.PUT("/:id", h1.UpdateUser)
+			authUsersAPI.DELETE("/:id", h1.DeleteUser)
 			// TODO: 認証トークンの是非を問わず 204 を返却した方が良いかも ...
-			auth.DELETE("/users/auth", h1.UnauthUser)
+			authUsersAPI.DELETE("/token", h1.DeleteToken)
+		}
+
+		// Admin
+		adminUsersAPI := usersAPI.Group("/admin")
+		adminUsersAPI.Use(middleware.CertMiddleware())
+		{
+			adminUsersAPI.POST("/token", h1.CreateAdminToken)
 		}
 	}
 

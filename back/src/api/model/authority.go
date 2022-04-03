@@ -93,6 +93,13 @@ func (a *Authority) Delete() error {
 	})
 }
 
+func (a *Authority) CreateOrUpdate() error {
+	if a.IsPersisted() {
+		return a.Update()
+	}
+	return a.Create()
+}
+
 func (a *Authority) SetTokenID(tokenID uint64) *Authority {
 	a.TokenID = tokenID
 	return a

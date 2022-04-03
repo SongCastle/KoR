@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/SongCastle/KoR/internal/env"
 )
 
 var myConf *MySQLConf
@@ -36,17 +38,17 @@ type MySQLConf struct {
 }
 
 func (c *MySQLConf) Init() error {
-	if c.host = os.Getenv("MYSQL_HOST"); c.host == "" {
+	if c.host = env.Get("MYSQL_HOST"); c.host == "" {
 		return errors.New("Blank MYSQL_HOST")
 	}
-	if c.dbName = os.Getenv("MYSQL_DATABASE"); c.dbName == "" {
+	if c.dbName = env.Get("MYSQL_DATABASE"); c.dbName == "" {
 		return errors.New("Blank MYSQL_DATABASE")
 	}
-	if c.port = os.Getenv("MYSQL_PORT"); c.port == "" {
+	if c.port = env.Get("MYSQL_PORT"); c.port == "" {
 		return errors.New("Blank MYSQL_PORT")
 	}
-	if c.userName = os.Getenv("MYSQL_USERNAME"); c.userName == "" {
-		return errors.New("Blank MYSQL_USERNAME")
+	if c.userName = env.Get("MYSQL_USER"); c.userName == "" {
+		return errors.New("Blank MYSQL_USER")
 	}
 	if err := c.setPassword(); err != nil {
 		return err
@@ -67,7 +69,7 @@ func (c *MySQLConf) URL() string {
 }
 
 func (c *MySQLConf) setPassword() error {
-	passwordPath := os.Getenv("MYSQL_ROOT_PASSWORD_FILE")
+	passwordPath := env.Get("MYSQL_ROOT_PASSWORD_FILE")
 	if passwordPath == "" {
 		return errors.New("Blank MYSQL_ROOT_PASSWORD_FILE")
 	}
