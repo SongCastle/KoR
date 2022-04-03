@@ -8,7 +8,6 @@ const config = merge(base, {
   mode: 'development',
   devtool: 'inline-source-map',
   devServer: {
-    // contentBaseを削除し、staticに変更
     static: {
       directory: staticPath,
     },
@@ -21,7 +20,6 @@ const config = merge(base, {
     ignored: /node_modules/,
   },
   target: 'web',
-  // publicPathとwatchContentBaseを削除
 });
 
 module.exports = config;
