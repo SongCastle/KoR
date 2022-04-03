@@ -8,7 +8,6 @@ import { Header } from './Header';
 import { Login } from './Login';
 import { Admin } from './Admin';
 import { Footer } from './Footer';
-import { ReactSlick } from './ReactSlick';
 
 export const Routes = () => (
   <Router>
@@ -18,8 +17,6 @@ export const Routes = () => (
       <Route exact path='/signup' component={SingupForm} />
       <Route exact path='/login' component={Login} />
       <Route exact path='/admin' component={Admin} />
-      <Route exact path='/react-slick' component={ReactSlick} />
-      
       <Route path='/' component={Top} />
     </Switch>
     <Footer />
