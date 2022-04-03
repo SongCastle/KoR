@@ -5,10 +5,10 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"log"
 	"regexp"
 	"strconv"
 
+	"github.com/SongCastle/KoR/internal/log"
 	"github.com/SongCastle/KoR/internal/random"
 	"golang.org/x/crypto/argon2"
 )
@@ -51,7 +51,7 @@ func Digest(password string) (string, error) {
 func Compare(hash, password string) bool {
 	raw, err := decodeHash(hash)
 	if err != nil {
-		log.Printf("argon2id Compare Error: %v\n", err)
+		log.Warnf("argon2id Compare Error: %v", err)
 		return false
 	}
 	calcHash := argon2.IDKey(

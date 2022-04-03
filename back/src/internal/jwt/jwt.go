@@ -2,9 +2,9 @@ package jwt
 
 import (
 	"errors"
-	"os"
 	"time"
 
+	"github.com/SongCastle/KoR/internal/env"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -36,8 +36,8 @@ type JWTRawToken struct {
 	*AdditionalClaims
 }
 
-func Init() {
-	if secretEnv := os.Getenv("JWT_SECRET"); secretEnv != "" {
+func init() {
+	if secretEnv := env.Get("JWT_SECRET"); secretEnv != "" {
 		jwtSecret = secretEnv
 	}
 }

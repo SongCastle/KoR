@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/SongCastle/KoR/internal/encryptor"
+	"github.com/SongCastle/KoR/internal/log"
 	"github.com/SongCastle/KoR/internal/random"
 	"github.com/jinzhu/gorm"
 )
@@ -19,7 +20,7 @@ type User struct {
 	Email             string    `json:"email,omitempty"`
 	PasswordSalt      string    `json:"-,omitempty"`
 	EncryptedPassword string    `json:"-,omitempty"`
-	CurrentToken      *Token    `json:"-"`
+	currentToken      *Token    `json:"-"`
 	CreatedAt         time.Time `json:"created_at,omitempty"`
 	UpdatedAt         time.Time `json:"updated_at,omitempty"`
 }
@@ -94,15 +95,12 @@ func (u *User) Delete() error {
 	})
 }
 
-func (u *User) CreateToken() error {
-	token := NewToken(&TokenParams{UserID: u.ID})
-	if err := token.Create(); err != nil {
+func (u *User) CreateToken(all bool) error {
+	token := u.CurrentToken()
+	if err := token.AddUserAuthority(all); err != nil {
 		return err
 	}
-	if err := token.AddUserAuthority(false); err != nil {
-		return err
-	}
-	u.CurrentToken = token
+	u.SetCurrentToken(token)
 	return nil
 }
 
@@ -124,7 +122,6 @@ func (u *User) EncryptPassword() error {
 		return err
 	}
 	u.EncryptedPassword = digest
-	u.Password = ""
 	return nil
 }
 
@@ -153,29 +150,57 @@ func (u *User) TestPassword(password string) bool {
 	return encryptor.Compare(u.EncryptedPassword, password + u.PasswordSalt)
 }
 
-func (u *User) BindParams(params *UserParams) {
-	bindParamsToObject(params, u)
-}
-
 func (u *User) isUniqLogin() (bool, error) {
 	var queries = []queryFunc{
 		SelectColumns("id"),
 	}
 	if u.IsPersisted() {
-		queries = append(queries, func(d *gorm.DB) *gorm.DB {
-			return d.Where("`login` = ? AND `id` <> ?", u.Login, u.ID).Limit(1)
-		})
+		queries = append(queries,
+			func(d *gorm.DB) *gorm.DB {
+				return d.Where("`login` = ? AND `id` <> ?", u.Login, u.ID)
+			},
+			LimitQuery(1),
+		)
 	} else {
-
-		queries = append(queries, func(d *gorm.DB) *gorm.DB {
-			return d.Where("`login` = ?", u.Login).Limit(1)
-		})
+		queries = append(queries,
+			WhereUser(&UserParams{Login: &u.Login}),
+			LimitQuery(1),
+		)
 	}
 	users, err := GetUsers(queries...)
 	if err == nil {
 		return len(users) == 0, nil
 	}
 	return false, err
+}
+
+func (u *User) CurrentToken() *Token {
+	if u.currentToken == nil && u.IsPersisted() {
+		// TODO: 関連モデルの一括取得
+		if token, err := GetToken(WhereToken(&TokenParams{UserID: u.ID})); err == nil {
+			u.SetCurrentToken(token)
+		} else {
+			log.Debugf("Not found Token: %v", err)
+			token = NewToken(&TokenParams{UserID: u.ID})
+			if err = token.Create(); err == nil {
+				u.SetCurrentToken(token)
+			} else {
+				log.Errorf("Failed to create token: User#%d", u.ID)
+				u.SetCurrentToken(&Token{})
+			}
+		}
+	} else if u.currentToken == nil {
+		u.SetCurrentToken(&Token{})
+	}
+	return u.currentToken
+}
+
+func (u *User) SetCurrentToken(token *Token) {
+	u.currentToken = token
+}
+
+func (u *User) BindParams(params *UserParams) {
+	bindParamsToObject(params, u)
 }
 
 // Hooks
