@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   back:
     container_name: back
