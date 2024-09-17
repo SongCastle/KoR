@@ -4,6 +4,7 @@ services:
     build: ./back
     environment:
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
+      - MYSQL_PASSWORD_FILE=/run/secrets/db-password
     env_file:
       - back/.env
       - db/.env
@@ -25,7 +26,10 @@ services:
     container_name: kor_db
     build: ./db
     environment:
-      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db-password
+      MYSQL_PASSWORD_FILE: /run/secrets/db-password
+      MYSQL_USER: kor
+      MYSQL_DATABASE: kor
     env_file:
       - db/.env
     secrets:

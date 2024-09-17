@@ -1,10 +1,5 @@
 #!/bin/bash
 
-if [ -z $(which mysql) ]; then
-  echo 'Not found mysql command'
-  exit 1
-fi
-
 if [ -z "$MYSQL_DATABASE" ] || [ -z "$MYSQL_DATABASE_TEST" ]; then
   echo 'Empty env variables (Database)'
   exit 1
