@@ -9,14 +9,12 @@ init:
 	cp front/.env.sample front/.env
 	@make build
 	@make up
-	docker compose exec back ash -c "chmod +x serve.sh && ./serve.sh"
 
 build:
 	docker compose build --no-cache
 
 up:
 	docker compose up -d
-	docker compose exec back ash -c "chmod +x serve.sh && ./serve.sh"
 
 stop:
 	docker compose stop
@@ -33,6 +31,9 @@ ps:
 # backend
 back:
 	docker compose exec back ash
+
+serve:
+	docker compose exec back ash -c "chmod +x serve.sh && ./serve.sh"
 
 # frontend
 front:
