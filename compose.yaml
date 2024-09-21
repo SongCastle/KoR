@@ -28,8 +28,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db-password
       MYSQL_PASSWORD_FILE: /run/secrets/db-password
-      MYSQL_USER: kor
-      MYSQL_DATABASE: kor
     env_file:
       - db/.env
     secrets:

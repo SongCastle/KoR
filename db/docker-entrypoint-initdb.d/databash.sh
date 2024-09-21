@@ -1,14 +1,23 @@
 #!/bin/bash
 
-if [ -z "$MYSQL_DATABASE" ] || [ -z "$MYSQL_DATABASE_TEST" ]; then
-  echo 'Empty env variables (Database)'
-  exit 1
-fi
+exec_sql() {
+  local sql=""
+  local db=$1
+  local user=$2
 
-mysql=(mysql -uroot -p${MYSQL_ROOT_PASSWORD})
-"${mysql[@]}" << SQL
-CREATE DATABASE IF NOT EXISTS $MYSQL_DATABASE;
-CREATE DATABASE IF NOT EXISTS $MYSQL_DATABASE_TEST;
-SQL
+  if [ -n "$db" ]; then
+    sql+="CREATE DATABASE IF NOT EXISTS \`$db\`;"
 
-echo 'Create Database'
+    if [ -n "$user" ]; then
+      sql+="GRANT ALL ON \`$db\`.* TO '$user'@'%';"
+    fi
+  fi
+
+  if [ -n "$sql" ]; then
+    mysql -h localhost -uroot -p"$MYSQL_ROOT_PASSWORD" <<< "$sql"
+  fi
+}
+
+exec_sql "$MYSQL_DATABASE" "$MYSQL_USER"
+
+exec_sql "$MYSQL_DATABASE_TEST" "$MYSQL_USER"
