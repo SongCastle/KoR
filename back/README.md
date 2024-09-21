@@ -29,14 +29,14 @@ $ curl 0.0.0.0:3000/ping
 $ curl -X POST 0.0.0.0:3000/v1/users -H 'Content-Type: application/json' -d '{"login": "user", "password": "user1234", "email": "user@example.com"}'
 > {"id":1,"login":"user","email":"user@example.com","created_at":"2022-01-15T10:50:20.3272622Z","updated_at":"2022-01-15T10:50:20.3272622Z"}
 
+# 認証
+$ curl -X POST 0.0.0.0:3000/v1/users/token -H 'Content-Type: application/json' -d '{"login": "user", "password": "user1234"}'
+> <token>
+
 # 取得
-$ curl 0.0.0.0:3000/v1/users/1
+$ curl -H 'Authorization: Bearer <token>' 0.0.0.0:3000/v1/users/1
 > {"id":1,"login":"user","email":"user@example.com","created_at":"2022-01-15T10:50:20.3272622Z","updated_at":"2022-01-15T10:50:20.3272622Z"}
 
 # 削除
 $ curl -X DELETE -H 'Authorization: Bearer <token>' 0.0.0.0:3000/v1/users/1
-
-# 認証
-$ curl -X PUT -H 0.0.0.0:3000/v1/users/token -H 'Content-Type: application/json' -d '{"login": "user", "password": "user1234"}'
-> <token>
 ```
