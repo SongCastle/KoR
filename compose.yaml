@@ -1,7 +1,6 @@
-version: '3.8'
 services:
   back:
-    container_name: back
+    container_name: kor_back
     build: ./back
     environment:
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
@@ -23,7 +22,7 @@ services:
     tty: true
 
   db:
-    container_name: db
+    container_name: kor_db
     build: ./db
     environment:
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
@@ -39,7 +38,7 @@ services:
       - ./db/data:/var/lib/mysql
 
   front:
-    container_name: front
+    container_name: kor_front
     build: ./front
     volumes:
       - ./front:/opt/front
